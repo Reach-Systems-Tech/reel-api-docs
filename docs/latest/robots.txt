@@ -1,3 +1,0 @@
-User-agent: *
-Allow: /
-Sitemap: https://Reach-Systems-Tech.github.io/p017_reach_web_portal_v2/sitemap.xml
