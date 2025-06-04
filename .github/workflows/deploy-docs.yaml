@@ -170,6 +170,16 @@ jobs:
             find "docs/$VERSION" -name "*.py" || echo "No Python files found"
           fi
 
+      - name: Disable Jekyll processing
+        run: |
+          # Create .nojekyll file to disable Jekyll processing
+          touch docs/.nojekyll
+          echo "✅ Created .nojekyll file to disable Jekyll processing"
+          
+          # Also ensure proper file structure for GitHub Pages
+          echo "Current docs structure:"
+          ls -la docs/
+
       - name: Update versions.json with semantic sorting
         run: |
           VERSION="${{ github.event.client_payload.version }}"
