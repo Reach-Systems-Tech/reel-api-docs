@@ -16,7 +16,7 @@ jobs:
     if: github.event_name == 'repository_dispatch'
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout and prepare repo state
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -25,6 +25,23 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: "3.10"
+
+      - name: Ensure latest repo state
+        run: |
+          echo "=== ENSURING LATEST REPO STATE ==="
+          git checkout main
+          git pull origin main || echo "Nothing to pull"
+          
+          # Show current state
+          echo "Current versions.json (if exists):"
+          if [ -f "docs/versions.json" ]; then
+            cat docs/versions.json
+          else
+            echo "No versions.json found"
+          fi
+          
+          echo "Current docs structure:"
+          ls -la docs/ 2>/dev/null || echo "No docs directory yet"
 
       - name: Download and extract documentation
         run: |
@@ -56,11 +73,9 @@ jobs:
             echo "Copying version-specific files from temp_extract/$VERSION/ to docs/$VERSION/"
             cp -r temp_extract/$VERSION/* "docs/$VERSION/"
             
-            # Copy global files to root docs (but NOT index.html!)
-            if [ -f "temp_extract/versions.json" ]; then
-              cp temp_extract/versions.json docs/
-              echo "Copied global versions.json"
-            fi
+            # DO NOT COPY global files that would overwrite repo state!
+            # Skip temp_extract/versions.json - we'll update it properly later
+            echo "⚠️  Skipping archive versions.json to preserve repo state"
             
             # Copy tools if they exist
             if [ -d "temp_extract/_tools" ]; then
@@ -86,11 +101,8 @@ jobs:
               exit 1
             fi
             
-            # Copy global files (versions.json, etc.) to root docs
-            if [ -f "temp_extract/docs/api/auto_docs/versions.json" ]; then
-              cp temp_extract/docs/api/auto_docs/versions.json docs/
-              echo "Copied global versions.json"
-            fi
+            # DO NOT copy global versions.json from archive!
+            echo "⚠️  Skipping archive versions.json to preserve repo state"
             
           else
             echo "❌ ERROR: Unrecognized archive structure!"
@@ -143,13 +155,6 @@ jobs:
                 echo "YES - This is the WRONG template (landing page)!"
                 echo ""
                 echo "❌ EXTRACTION FAILED: Landing page template copied to version location"
-                echo "This means the archive structure is not what we expected."
-                echo ""
-                echo "Archive should have:"
-                echo "  ./$VERSION/index.html  <- Redoc template"
-                echo "  ./index.html           <- Landing page template"
-                echo ""
-                echo "But the version location got the landing page template instead."
                 exit 1
               else
                 echo "NO - Unknown template type"
@@ -175,10 +180,6 @@ jobs:
           # Create .nojekyll file to disable Jekyll processing
           touch docs/.nojekyll
           echo "✅ Created .nojekyll file to disable Jekyll processing"
-          
-          # Also ensure proper file structure for GitHub Pages
-          echo "Current docs structure:"
-          ls -la docs/
 
       - name: Update versions.json with semantic sorting
         run: |
@@ -187,16 +188,13 @@ jobs:
           echo "=== UPDATING VERSIONS.JSON ==="
           echo "New version to add: $VERSION"
 
-          # Make sure we're on main branch and have latest versions.json
-          git checkout main
-          git pull origin main || echo "Nothing to pull"
-
           # Debug: Show current versions.json if it exists
           if [ -f "docs/versions.json" ]; then
-            echo "Current versions.json content:"
+            echo "Current versions.json content (from repo):"
             cat docs/versions.json
           else
             echo "No existing versions.json found - creating new one"
+            mkdir -p docs
             echo '[]' > docs/versions.json
           fi
 
