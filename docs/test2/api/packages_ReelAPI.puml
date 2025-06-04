@@ -1,0 +1,390 @@
+@startuml packages_ReelAPI
+set namespaceSeparator none
+package "api" as api {
+}
+package "api.config" as api.config {
+}
+package "api.config.config_setup_handler" as api.config.config_setup_handler {
+}
+package "api.config.json_config_handler" as api.config.json_config_handler {
+}
+package "api.config.yaml_config_handler" as api.config.yaml_config_handler {
+}
+package "api.constants" as api.constants {
+}
+package "api.constants.constants" as api.constants.constants {
+}
+package "api.constants.enums" as api.constants.enums {
+}
+package "api.events" as api.events {
+}
+package "api.events.event" as api.events.event {
+}
+package "api.events.event_channel" as api.events.event_channel {
+}
+package "api.exceptions" as api.exceptions {
+}
+package "api.exceptions.config_exceptions" as api.exceptions.config_exceptions {
+}
+package "api.exceptions.http" as api.exceptions.http {
+}
+package "api.factories" as api.factories {
+}
+package "api.factories.config_factory" as api.factories.config_factory {
+}
+package "api.factories.encoder_controller_factory" as api.factories.encoder_controller_factory {
+}
+package "api.factories.gpio_handler_factory" as api.factories.gpio_handler_factory {
+}
+package "api.factories.motor_driver_factory" as api.factories.motor_driver_factory {
+}
+package "api.factories.reel_component_factory" as api.factories.reel_component_factory {
+}
+package "api.hardware" as api.hardware {
+}
+package "api.hardware.drivers" as api.hardware.drivers {
+}
+package "api.hardware.drivers.motoron" as api.hardware.drivers.motoron {
+}
+package "api.hardware.drivers.motoron.motoron_command_handler" as api.hardware.drivers.motoron.motoron_command_handler {
+}
+package "api.hardware.drivers.motoron.motoron_motor_driver" as api.hardware.drivers.motoron.motoron_motor_driver {
+}
+package "api.hardware.drivers.motoron.motoron_state" as api.hardware.drivers.motoron.motoron_state {
+}
+package "api.hardware.drivers.motoron.motoron_state_handler" as api.hardware.drivers.motoron.motoron_state_handler {
+}
+package "api.hardware.drivers.roboclaw" as api.hardware.drivers.roboclaw {
+}
+package "api.hardware.drivers.roboclaw.command_handler" as api.hardware.drivers.roboclaw.command_handler {
+}
+package "api.hardware.drivers.roboclaw.roboclaw_commands" as api.hardware.drivers.roboclaw.roboclaw_commands {
+}
+package "api.hardware.drivers.roboclaw.roboclaw_motor_driver" as api.hardware.drivers.roboclaw.roboclaw_motor_driver {
+}
+package "api.hardware.drivers.roboclaw.roboclaw_pid_handler" as api.hardware.drivers.roboclaw.roboclaw_pid_handler {
+}
+package "api.hardware.drivers.roboclaw.roboclaw_protocol_helper" as api.hardware.drivers.roboclaw.roboclaw_protocol_helper {
+}
+package "api.hardware.drivers.roboclaw.roboclaw_state_handler" as api.hardware.drivers.roboclaw.roboclaw_state_handler {
+}
+package "api.hardware.encoders" as api.hardware.encoders {
+}
+package "api.hardware.encoders.encoder_controller" as api.hardware.encoders.encoder_controller {
+}
+package "api.hardware.encoders.null_encoder_handler" as api.hardware.encoders.null_encoder_handler {
+}
+package "api.hardware.encoders.qsb_encoder_handler" as api.hardware.encoders.qsb_encoder_handler {
+}
+package "api.hardware.encoders.roboclaw_encoder" as api.hardware.encoders.roboclaw_encoder {
+}
+package "api.hardware.gpio" as api.hardware.gpio {
+}
+package "api.hardware.gpio.control_box_gpio_handler" as api.hardware.gpio.control_box_gpio_handler {
+}
+package "api.hardware.gpio.control_pendant_gpio_handler" as api.hardware.gpio.control_pendant_gpio_handler {
+}
+package "api.hardware.gpio.null_gpio_handler" as api.hardware.gpio.null_gpio_handler {
+}
+package "api.hardware.serial_handler" as api.hardware.serial_handler {
+}
+package "api.interfaces" as api.interfaces {
+}
+package "api.interfaces.i_encoder_handler" as api.interfaces.i_encoder_handler {
+}
+package "api.interfaces.i_gpio_handler" as api.interfaces.i_gpio_handler {
+}
+package "api.interfaces.i_motor_driver" as api.interfaces.i_motor_driver {
+}
+package "api.main" as api.main {
+}
+package "api.main.app" as api.main.app {
+}
+package "api.main.app_settings" as api.main.app_settings {
+}
+package "api.main.auth" as api.main.auth {
+}
+package "api.main.core_settings" as api.main.core_settings {
+}
+package "api.main.database" as api.main.database {
+}
+package "api.main.security" as api.main.security {
+}
+package "api.main.validators" as api.main.validators {
+}
+package "api.models" as api.models {
+}
+package "api.models.mixins" as api.models.mixins {
+}
+package "api.models.user" as api.models.user {
+}
+package "api.repository" as api.repository {
+}
+package "api.repository.user" as api.repository.user {
+}
+package "api.routes" as api.routes {
+}
+package "api.routes.motor_endpoints" as api.routes.motor_endpoints {
+}
+package "api.routes.v1" as api.routes.v1 {
+}
+package "api.routes.v1.auth" as api.routes.v1.auth {
+}
+package "api.routes.v1.health" as api.routes.v1.health {
+}
+package "api.routes.v1.motor_reel_routes" as api.routes.v1.motor_reel_routes {
+}
+package "api.routes.v2" as api.routes.v2 {
+}
+package "api.routes.v2.health" as api.routes.v2.health {
+}
+package "api.run_tests" as api.run_tests {
+}
+package "api.schemas" as api.schemas {
+}
+package "api.schemas.cable_reel_save_data" as api.schemas.cable_reel_save_data {
+}
+package "api.schemas.configs" as api.schemas.configs {
+}
+package "api.schemas.health" as api.schemas.health {
+}
+package "api.schemas.manifest" as api.schemas.manifest {
+}
+package "api.schemas.motor_driver_response" as api.schemas.motor_driver_response {
+}
+package "api.schemas.security" as api.schemas.security {
+}
+package "api.schemas.v1" as api.schemas.v1 {
+}
+package "api.schemas.v1.heartbeat_schemas" as api.schemas.v1.heartbeat_schemas {
+}
+package "api.schemas.v1.motor_reel_schemas" as api.schemas.v1.motor_reel_schemas {
+}
+package "api.schemas.v1.shared_schemas" as api.schemas.v1.shared_schemas {
+}
+package "api.schemas.v1.user" as api.schemas.v1.user {
+}
+package "api.schemas.v2" as api.schemas.v2 {
+}
+package "api.services" as api.services {
+}
+package "api.services.reel_controller" as api.services.reel_controller {
+}
+package "api.services.reel_manager" as api.services.reel_manager {
+}
+package "api.services.reel_manager_wrapper" as api.services.reel_manager_wrapper {
+}
+package "api.services.reel_monitor_thread" as api.services.reel_monitor_thread {
+}
+package "api.utils" as api.utils {
+}
+package "api.utils.debugging" as api.utils.debugging {
+}
+package "api.utils.encoder_converter" as api.utils.encoder_converter {
+}
+package "api.utils.math_helper" as api.utils.math_helper {
+}
+package "api.utils.random_name_generator" as api.utils.random_name_generator {
+}
+package "api.utils.system_info" as api.utils.system_info {
+}
+api.config --> api.config.config_setup_handler
+api.config --> api.config.json_config_handler
+api.config --> api.config.yaml_config_handler
+api.config.config_setup_handler --> api.config.json_config_handler
+api.config.config_setup_handler --> api.config.yaml_config_handler
+api.config.config_setup_handler --> api.constants.constants
+api.config.json_config_handler --> api.constants.constants
+api.config.json_config_handler --> api.schemas.cable_reel_save_data
+api.config.yaml_config_handler --> api.constants.constants
+api.config.yaml_config_handler --> api.schemas.cable_reel_save_data
+api.constants --> api.constants.constants
+api.constants --> api.constants.enums
+api.events --> api.events.event
+api.events --> api.events.event_channel
+api.exceptions --> api.exceptions.config_exceptions
+api.exceptions --> api.exceptions.http
+api.factories --> api.factories.encoder_controller_factory
+api.factories --> api.factories.gpio_handler_factory
+api.factories --> api.factories.motor_driver_factory
+api.factories --> api.factories.reel_component_factory
+api.factories.config_factory --> api.schemas.configs
+api.factories.encoder_controller_factory --> api.hardware.encoders.encoder_controller
+api.factories.encoder_controller_factory --> api.hardware.encoders.null_encoder_handler
+api.factories.encoder_controller_factory --> api.hardware.encoders.qsb_encoder_handler
+api.factories.encoder_controller_factory --> api.hardware.encoders.roboclaw_encoder
+api.factories.encoder_controller_factory --> api.schemas.configs
+api.factories.gpio_handler_factory --> api.hardware.gpio
+api.factories.gpio_handler_factory --> api.interfaces
+api.factories.gpio_handler_factory --> api.schemas.configs
+api.factories.gpio_handler_factory --> api.services.reel_controller
+api.factories.motor_driver_factory --> api.hardware.drivers.motoron.motoron_motor_driver
+api.factories.motor_driver_factory --> api.hardware.drivers.roboclaw.roboclaw_motor_driver
+api.factories.motor_driver_factory --> api.hardware.drivers.roboclaw.roboclaw_protocol_helper
+api.factories.motor_driver_factory --> api.hardware.serial_handler
+api.factories.motor_driver_factory --> api.interfaces.i_motor_driver
+api.factories.motor_driver_factory --> api.schemas.configs
+api.factories.reel_component_factory --> api.factories
+api.factories.reel_component_factory --> api.hardware.drivers.roboclaw.command_handler
+api.factories.reel_component_factory --> api.hardware.drivers.roboclaw.roboclaw_protocol_helper
+api.factories.reel_component_factory --> api.hardware.serial_handler
+api.hardware.drivers.motoron --> api.hardware.drivers.motoron.motoron_motor_driver
+api.hardware.drivers.motoron --> api.hardware.drivers.motoron.motoron_state
+api.hardware.drivers.motoron --> api.hardware.drivers.motoron.motoron_state_handler
+api.hardware.drivers.motoron.motoron_motor_driver --> api.constants.enums
+api.hardware.drivers.motoron.motoron_motor_driver --> api.hardware.drivers.motoron.motoron_command_handler
+api.hardware.drivers.motoron.motoron_motor_driver --> api.hardware.drivers.motoron.motoron_state_handler
+api.hardware.drivers.motoron.motoron_motor_driver --> api.interfaces.i_motor_driver
+api.hardware.drivers.motoron.motoron_motor_driver --> api.schemas.configs
+api.hardware.drivers.motoron.motoron_motor_driver --> api.schemas.motor_driver_response
+api.hardware.drivers.motoron.motoron_state_handler --> api.hardware.drivers.motoron.motoron_command_handler
+api.hardware.drivers.motoron.motoron_state_handler --> api.hardware.drivers.motoron.motoron_state
+api.hardware.drivers.roboclaw --> api.hardware.drivers.roboclaw.roboclaw_commands
+api.hardware.drivers.roboclaw --> api.hardware.drivers.roboclaw.roboclaw_motor_driver
+api.hardware.drivers.roboclaw --> api.hardware.drivers.roboclaw.roboclaw_pid_handler
+api.hardware.drivers.roboclaw --> api.hardware.drivers.roboclaw.roboclaw_protocol_helper
+api.hardware.drivers.roboclaw --> api.hardware.drivers.roboclaw.roboclaw_state_handler
+api.hardware.drivers.roboclaw.command_handler --> api.hardware.drivers.roboclaw.roboclaw_protocol_helper
+api.hardware.drivers.roboclaw.roboclaw_motor_driver --> api.constants.enums
+api.hardware.drivers.roboclaw.roboclaw_motor_driver --> api.hardware.drivers.roboclaw.command_handler
+api.hardware.drivers.roboclaw.roboclaw_motor_driver --> api.hardware.drivers.roboclaw.roboclaw_pid_handler
+api.hardware.drivers.roboclaw.roboclaw_motor_driver --> api.hardware.drivers.roboclaw.roboclaw_protocol_helper
+api.hardware.drivers.roboclaw.roboclaw_motor_driver --> api.hardware.drivers.roboclaw.roboclaw_state_handler
+api.hardware.drivers.roboclaw.roboclaw_motor_driver --> api.interfaces.i_motor_driver
+api.hardware.drivers.roboclaw.roboclaw_motor_driver --> api.schemas.configs
+api.hardware.drivers.roboclaw.roboclaw_motor_driver --> api.schemas.motor_driver_response
+api.hardware.drivers.roboclaw.roboclaw_motor_driver --> api.utils
+api.hardware.drivers.roboclaw.roboclaw_pid_handler --> api.utils
+api.hardware.drivers.roboclaw.roboclaw_protocol_helper --> api.hardware.drivers.roboclaw.roboclaw_commands
+api.hardware.drivers.roboclaw.roboclaw_state_handler --> api.hardware.drivers.roboclaw.roboclaw_protocol_helper
+api.hardware.encoders.encoder_controller --> api.constants.enums
+api.hardware.encoders.encoder_controller --> api.interfaces.i_encoder_handler
+api.hardware.encoders.null_encoder_handler --> api.interfaces.i_encoder_handler
+api.hardware.encoders.qsb_encoder_handler --> api.constants.enums
+api.hardware.encoders.qsb_encoder_handler --> api.interfaces.i_encoder_handler
+api.hardware.encoders.qsb_encoder_handler --> api.schemas.configs
+api.hardware.encoders.roboclaw_encoder --> api.constants.enums
+api.hardware.encoders.roboclaw_encoder --> api.hardware.drivers.roboclaw.command_handler
+api.hardware.encoders.roboclaw_encoder --> api.interfaces.i_encoder_handler
+api.hardware.encoders.roboclaw_encoder --> api.utils.math_helper
+api.hardware.gpio --> api.hardware.gpio.control_box_gpio_handler
+api.hardware.gpio --> api.hardware.gpio.control_pendant_gpio_handler
+api.hardware.gpio --> api.hardware.gpio.null_gpio_handler
+api.hardware.gpio.control_box_gpio_handler --> api.constants.enums
+api.hardware.gpio.control_box_gpio_handler --> api.interfaces.i_gpio_handler
+api.hardware.gpio.control_box_gpio_handler --> api.interfaces.i_motor_driver
+api.hardware.gpio.control_box_gpio_handler --> api.schemas.configs
+api.hardware.gpio.control_pendant_gpio_handler --> api.constants.enums
+api.hardware.gpio.control_pendant_gpio_handler --> api.interfaces.i_gpio_handler
+api.hardware.gpio.control_pendant_gpio_handler --> api.interfaces.i_motor_driver
+api.hardware.gpio.control_pendant_gpio_handler --> api.schemas.configs
+api.hardware.gpio.null_gpio_handler --> api.interfaces.i_gpio_handler
+api.hardware.serial_handler --> api.hardware.drivers.roboclaw.roboclaw_protocol_helper
+api.interfaces --> api.interfaces.i_gpio_handler
+api.interfaces --> api.interfaces.i_motor_driver
+api.interfaces.i_gpio_handler --> api.schemas.configs
+api.interfaces.i_motor_driver --> api.constants.enums
+api.interfaces.i_motor_driver --> api.schemas.configs
+api.interfaces.i_motor_driver --> api.schemas.motor_driver_response
+api.main.app --> api.config
+api.main.app --> api.exceptions
+api.main.app --> api.factories.config_factory
+api.main.app --> api.main.app_settings
+api.main.app --> api.main.core_settings
+api.main.app --> api.routes
+api.main.app --> api.routes.motor_endpoints
+api.main.app --> api.services
+api.main.app --> api.services.reel_manager_wrapper
+api.main.app_settings --> api.config.config_setup_handler
+api.main.app_settings --> api.schemas.configs
+api.main.app_settings --> api.schemas.manifest
+api.main.auth --> api.exceptions.http
+api.main.auth --> api.main.database
+api.main.auth --> api.main.security
+api.main.auth --> api.models.user
+api.main.auth --> api.repository.user
+api.main.core_settings --> api.constants.constants
+api.main.database --> api.constants.constants
+api.main.database --> api.main.core_settings
+api.main.security --> api.main.core_settings
+api.main.validators --> api.main.core_settings
+api.models.user --> api.main.database
+api.models.user --> api.models.mixins
+api.repository.user --> api.main.security
+api.repository.user --> api.models.user
+api.repository.user --> api.schemas.v1.user
+api.routes --> api.main.core_settings
+api.routes --> api.routes.v1
+api.routes.v1 --> api.routes.v1.auth
+api.routes.v1 --> api.routes.v1.health
+api.routes.v1 --> api.routes.v1.motor_reel_routes
+api.routes.v1.auth --> api.main.auth
+api.routes.v1.auth --> api.main.database
+api.routes.v1.auth --> api.main.security
+api.routes.v1.auth --> api.repository.user
+api.routes.v1.auth --> api.schemas.v1.user
+api.routes.v1.health --> api.main.core_settings
+api.routes.v1.health --> api.main.database
+api.routes.v1.health --> api.schemas.health
+api.routes.v1.health --> api.utils.system_info
+api.routes.v1.motor_reel_routes --> api.constants.enums
+api.routes.v1.motor_reel_routes --> api.main.auth
+api.routes.v1.motor_reel_routes --> api.main.database
+api.routes.v1.motor_reel_routes --> api.models.user
+api.routes.v1.motor_reel_routes --> api.schemas.v1.heartbeat_schemas
+api.routes.v1.motor_reel_routes --> api.schemas.v1.motor_reel_schemas
+api.routes.v1.motor_reel_routes --> api.services
+api.routes.v1.motor_reel_routes --> api.services.reel_manager
+api.routes.v2 --> api.routes.v2.health
+api.run_tests --> api.constants.constants
+api.schemas --> api.schemas.configs
+api.schemas --> api.schemas.security
+api.schemas.configs --> api.config.yaml_config_handler
+api.schemas.configs --> api.constants
+api.schemas.configs --> api.schemas.v1.shared_schemas
+api.schemas.manifest --> api.config.json_config_handler
+api.schemas.motor_driver_response --> api.constants.enums
+api.schemas.v1.heartbeat_schemas --> api.schemas.v1.shared_schemas
+api.schemas.v1.motor_reel_schemas --> api.constants.enums
+api.schemas.v1.motor_reel_schemas --> api.schemas.v1.heartbeat_schemas
+api.schemas.v1.motor_reel_schemas --> api.schemas.v1.shared_schemas
+api.schemas.v1.shared_schemas --> api.constants.enums
+api.schemas.v1.user --> api.main.validators
+api.services --> api.services.reel_manager_wrapper
+api.services.reel_controller --> api.constants.enums
+api.services.reel_controller --> api.events
+api.services.reel_controller --> api.hardware.drivers.motoron.motoron_motor_driver
+api.services.reel_controller --> api.hardware.drivers.roboclaw.roboclaw_motor_driver
+api.services.reel_controller --> api.hardware.encoders.encoder_controller
+api.services.reel_controller --> api.interfaces.i_motor_driver
+api.services.reel_controller --> api.schemas.motor_driver_response
+api.services.reel_controller --> api.utils.encoder_converter
+api.services.reel_manager --> api.config
+api.services.reel_manager --> api.config.yaml_config_handler
+api.services.reel_manager --> api.constants.enums
+api.services.reel_manager --> api.factories
+api.services.reel_manager --> api.hardware.drivers.motoron
+api.services.reel_manager --> api.hardware.drivers.roboclaw
+api.services.reel_manager --> api.schemas.cable_reel_save_data
+api.services.reel_manager --> api.schemas.configs
+api.services.reel_manager --> api.schemas.manifest
+api.services.reel_manager --> api.schemas.motor_driver_response
+api.services.reel_manager --> api.schemas.v1.heartbeat_schemas
+api.services.reel_manager --> api.schemas.v1.motor_reel_schemas
+api.services.reel_manager --> api.services.reel_controller
+api.services.reel_manager --> api.services.reel_monitor_thread
+api.services.reel_manager --> api.utils.random_name_generator
+api.services.reel_manager_wrapper --> api.factories.config_factory
+api.services.reel_manager_wrapper --> api.main.app_settings
+api.services.reel_manager_wrapper --> api.main.core_settings
+api.services.reel_manager_wrapper --> api.schemas.configs
+api.services.reel_manager_wrapper --> api.schemas.manifest
+api.services.reel_manager_wrapper --> api.services.reel_manager
+api.services.reel_monitor_thread --> api.constants.enums
+api.services.reel_monitor_thread --> api.hardware.drivers.roboclaw.roboclaw_motor_driver
+api.services.reel_monitor_thread --> api.schemas.configs
+api.services.reel_monitor_thread --> api.services.reel_controller
+api.utils --> api.utils.debugging
+api.utils --> api.utils.encoder_converter
+api.utils --> api.utils.math_helper
+@enduml

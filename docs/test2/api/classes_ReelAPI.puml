@@ -1,0 +1,1909 @@
+@startuml classes_ReelAPI
+set namespaceSeparator none
+class "AddCableOffsetRequest" as api.schemas.v1.motor_reel_schemas.AddCableOffsetRequest {
+  offset_to_add_in_meters : float
+}
+class "AddCableOffsetResponse" as api.schemas.v1.motor_reel_schemas.AddCableOffsetResponse {
+}
+class "AddCableOffsetResult" as api.schemas.v1.motor_reel_schemas.AddCableOffsetResult {
+  new_cable_length : float
+}
+class "Any" as typing.Any {
+  __new__()
+}
+class "BaseResponse" as api.schemas.v1.motor_reel_schemas.BaseResponse {
+  action : str
+  error : bool
+  error_msgs : List[str]
+  result
+}
+class "BaseResult" as api.schemas.v1.heartbeat_schemas.BaseResult {
+}
+class "BasicMetrics" as api.models.mixins.BasicMetrics {
+  created_timestamp
+  deleted
+  last_updated_timestamp
+}
+class "BlueprintConfig" as api.schemas.configs.BlueprintConfig {
+  config : Dict[str, Any]
+  description : str
+  name : str
+}
+class "CablePositionOperationResult" as api.schemas.v1.motor_reel_schemas.CablePositionOperationResult {
+  new_position : float
+}
+class "CableReelChassisIdentifier" as api.schemas.manifest.CableReelChassisIdentifier {
+  identifier : Literal['croc_mini']
+}
+class "CableReelInfo" as api.schemas.v1.motor_reel_schemas.CableReelInfo {
+  api_version : str
+  calibration_factor : float
+  encoder_configuration : str
+  max_speed_meters_per_second : float
+  motor_driver_version : str
+}
+class "CableReelInfoResponse" as api.schemas.v1.motor_reel_schemas.CableReelInfoResponse {
+}
+class "CableReelInfoResult" as api.schemas.v1.motor_reel_schemas.CableReelInfoResult {
+  info
+}
+class "CableReelManagerConfig" as api.schemas.configs.CableReelManagerConfig {
+  calibration_factor : int
+  enable_cable_reel_safeguards : bool
+  lost_connection_retrieval : bool
+  max_speed_per_second : float
+  max_tether_length_meters : float
+  zero_point_gutter : float
+  load() -> 'CableReelManagerConfig'
+  load_default() -> 'CableReelManagerConfig'
+}
+class "CableReelSaveData" as api.schemas.cable_reel_save_data.CableReelSaveData {
+  current_encoder_count : float
+  m1_speed_percentage : int
+  m1_speed_percentage : int
+  m2_speed_percentage : int
+}
+class "CalibrationResult" as api.schemas.v1.motor_reel_schemas.CalibrationResult {
+  calibrating : bool
+}
+class "CancelCalibrationResponse" as api.schemas.v1.motor_reel_schemas.CancelCalibrationResponse {
+}
+class "Command" as api.hardware.drivers.roboclaw.command_handler.Command {
+  address : int
+  callback : Optional[Callable]
+  execute_callback : Optional[Callable]
+  execution_completed
+  name : str
+  params : list | None
+  priority : int
+  timestamp
+  __eq__(other)
+  __hash__()
+  __init__(name: str, address: int, params: list | None, priority: int, callback: Callable, execute_callback: Callable)
+  __lt__(other)
+  wait_for_completion(timeout: float) -> bool
+}
+class "CommandHandler" as api.hardware.drivers.roboclaw.command_handler.CommandHandler {
+  COMMAND_SPECIFIC_ACK_ATTEMPTS : dict
+  DEFAULT_ACK_ATTEMPTS : int
+  MERGEABLE_COMMANDS : set
+  MOTION_COMMANDS : set
+  command_dict : Dict[Tuple, Command]
+  command_queue
+  is_processing : bool
+  queue_lock
+  serial_handler
+  __init__(serial_handler)
+  _default_execute(command: Command)
+  _execute_command(command: Command)
+  _process_queue()
+  _remove_conflicting_motion_commands(new_command)
+  add_command(command: Command)
+  flush()
+  get_queue_size()
+}
+class "Config" as api.schemas.motor_driver_response.MotorDriverResponse.Config {
+  use_enum_values : bool
+}
+class "ConfigFactory" as api.factories.config_factory.ConfigFactory {
+  create_encoder_config(config_type: str, config_data: dict) -> Union[RoboclawEncoderConfig, NullEncoderConfig]
+  create_gpio_config(config_type: str, config_data: dict) -> Union[ControlBoxGPIOConfig, PendantControlGPIOConfig, NullGPIOConfig]
+  create_motor_driver_config(config_type: str, config_data: dict) -> Union[RoboclawMotorDriverConfig, MotoronMotorDriverConfig, NullMotorDriverConfig]
+  create_serial_config(config_type: str, config_data: dict) -> Union[NullSerialHandlerConfig, RoboclawSerialHandlerConfig]
+}
+class "ConfigSetupHandler" as api.config.config_setup_handler.ConfigSetupHandler {
+  CRITICAL_FILES : list
+  _initialize_file(default_path: Path, persistence_path: Path, handler: Type)
+  _set_file_permissions(file_path: Path)
+  check_configs() -> List[str]
+  ensure_valid_setup()
+  get_encoder_config(encoder_type: str) -> Dict[str, Any]
+  get_gpio_config(gpio_type: str) -> Dict[str, Any]
+  get_hardware_config(config_type: str, config_key: str) -> Dict[str, Any]
+  get_motor_driver_config(motor_driver_type: str) -> Dict[str, Any]
+  get_serial_config(serial_type: str) -> Dict[str, Any]
+  initialize_configs()
+  validate_manifest() -> Tuple[bool, str]
+}
+class "ConfigureLogging" as api.main.core_settings.ConfigureLogging {
+  basedir : str
+  config_path : str
+  log_directory : str
+  log_file_names : list[str]
+  log_level : str
+  __init__(log_level: str)
+  configure_logging()
+  setup_logging()
+  test_log_levels()
+}
+class "ConnectedUser" as api.schemas.v1.heartbeat_schemas.ConnectedUser {
+  color : str
+  username : str
+}
+class "ControlBoxGPIOConfig" as api.schemas.configs.ControlBoxGPIOConfig {
+  emergency_stop_pin : int
+  manual_buttons_enabled : bool
+  manual_mode_led_pin : int
+  manual_remote_sw_pin : int
+  manual_speed_percentage : int
+  unwind_btn_pin : int
+  wind_btn_pin : int
+}
+class "ControlBoxGPIOHandler" as api.hardware.gpio.control_box_gpio_handler.ControlBoxGPIOHandler {
+  __manual_buttons_enabled : bool
+  __manual_mode_button_led_pin
+  __manual_remote_sw
+  __unwind_btn
+  __wind_btn
+  _remote_active : bool
+  remote_active
+  remote_active : bool
+  __drive_motor(direction: ReelDirection) -> None
+  __init__(motor_driver: IMotorDriver, button_class: Type[Button], led_class: Type[LED], config: ControlBoxGPIOConfig)
+  __initialize_manual_mode_led() -> None
+  __initialize_manual_remote_switch() -> None
+  __initialize_wind_unwind_buttons() -> None
+  __on_btn_released() -> None
+  __on_manual_remote_sw_in() -> None
+  __on_manual_remote_sw_out() -> None
+  __on_unwind_btn_pressed() -> None
+  __on_wind_btn_pressed() -> None
+  initialize() -> None
+}
+class "DetailedHealthCheckResponse" as api.schemas.health.DetailedHealthCheckResponse {
+  api_version : str
+  database_latency : float
+  environment : str
+}
+class "DiskSpace" as api.schemas.health.DiskSpace {
+  free_bytes : int
+  free_gb : float
+  percent_used : float
+  total_bytes : int
+  total_gb : float
+  used_bytes : int
+  used_gb : float
+}
+class "EmergencyStopActivateResponse" as api.schemas.v1.motor_reel_schemas.EmergencyStopActivateResponse {
+}
+class "EmergencyStopDeactivateResponse" as api.schemas.v1.motor_reel_schemas.EmergencyStopDeactivateResponse {
+}
+class "EmergencyStopResult" as api.schemas.v1.motor_reel_schemas.EmergencyStopResult {
+  is_active : bool
+}
+class "EncoderController" as api.hardware.encoders.encoder_controller.EncoderController {
+  MAX_READ_ATTEMPTS : int
+  encoder_handler
+  __init__(encoder_handler: IEncoderHandler)
+  get_pulses_count() -> Dict[str, Any]
+  set_pulses_count(count: int, motor_num: MotorNumber) -> Dict[str, Any]
+  zero_pulses_count(motor_num: MotorNumber) -> Dict[str, Any]
+}
+class "EncoderControllerFactory" as api.factories.encoder_controller_factory.EncoderControllerFactory {
+  _create_null_encoder_controller() -> EncoderController
+  _create_qsb_encoder_controller(config) -> EncoderController
+  _create_roboclaw_encoder_controller(config: RoboclawEncoderConfig, command_handler) -> EncoderController
+  create_encoder_controller(encoder_type: str, config: Dict[str, Any], command_handler) -> EncoderController
+}
+class "EncoderConverter" as api.utils.encoder_converter.EncoderConverter {
+  convert_meters_to_pulses(meters: float, cal_factor: float) -> int
+  convert_pulses_to_meters(pulses: int, cal_factor: float) -> float
+}
+class "EncoderIdentifier" as api.schemas.manifest.EncoderIdentifier {
+  identifier : Literal['none', 'roboclaw', 'qsb']
+}
+class "Enum" as enum.Enum {
+  __dir__()
+  __format__(format_spec)
+  __hash__()
+  {abstract}__init__()
+  __new__(value)
+  __reduce_ex__(proto)
+  __repr__()
+  __str__()
+  _generate_next_value_(start, count, last_values)
+  _missing_(value)
+  name()
+  value()
+}
+class "Event" as api.events.event.Event {
+  _handlers : list
+  __init__()
+  notify()
+  subscribe(handler)
+  unsubscribe(handler)
+  unsubscribe_all()
+}
+class "Event" as threading.Event {
+  _cond : Condition
+  _flag : bool
+  __init__()
+  __repr__()
+  _at_fork_reinit()
+  clear()
+  isSet()
+  is_set()
+  set()
+  wait(timeout)
+}
+class "EventChannel" as api.events.event_channel.EventChannel {
+  subscribers : dict
+  __init__()
+  publish(type)
+  subscribe(type, callback)
+}
+class "FinishCalibrationRequest" as api.schemas.v1.motor_reel_schemas.FinishCalibrationRequest {
+  tether_length : float
+}
+class "FinishCalibrationResponse" as api.schemas.v1.motor_reel_schemas.FinishCalibrationResponse {
+}
+class "FinishCalibrationResult" as api.schemas.v1.motor_reel_schemas.FinishCalibrationResult {
+  new_factor : float
+}
+class "GPIOConfig" as api.schemas.configs.GPIOConfig {
+  control_box
+  pendant_control
+}
+class "GPIOControlIdentifier" as api.schemas.manifest.GPIOControlIdentifier {
+  identifier : Literal['none', 'pendant', 'control_box']
+}
+class "GPIOHandlerFactory" as api.factories.gpio_handler_factory.GPIOHandlerFactory {
+  create_gpio_handler(config_type: str, motor_driver: ReelController, button_class: Type[Button], led_class: Type[LED], config: GPIOConfig) -> IGPIOHandler
+}
+class "Generic" as typing.Generic {
+  __slots__ : tuple
+  _is_protocol : bool
+  __class_getitem__(item)
+  __init_subclass__()
+}
+class "GenericHeartbeatResponse" as api.schemas.v1.heartbeat_schemas.GenericHeartbeatResponse {
+  current_users : List[ConnectedUser]
+  result
+  session
+  state
+  status
+  from_heartbeat(heartbeat: 'HeartbeatResponse', result: T) -> 'GenericHeartbeatResponse[T]'
+}
+class "GetCablePositionResponse" as api.schemas.v1.motor_reel_schemas.GetCablePositionResponse {
+}
+class "GetCablePositionResult" as api.schemas.v1.motor_reel_schemas.GetCablePositionResult {
+  cable_position : float
+}
+class "GoToRequest" as api.schemas.v1.motor_reel_schemas.GoToRequest {
+  target_position : float
+}
+class "GoToResponse" as api.schemas.v1.motor_reel_schemas.GoToResponse {
+}
+class "GoToResult" as api.schemas.v1.motor_reel_schemas.GoToResult {
+  current_position : float
+  reel_direction : str
+  target_position : float
+}
+class "HardwareConfig" as api.main.app_settings.HardwareConfig {
+  cable_reel_config
+  encoder_config : dict
+  gpio_config : dict
+  manifest
+  motor_driver_config : dict
+  serial_config : dict
+  load()
+}
+class "HealthCheckResponse" as api.schemas.health.HealthCheckResponse {
+  database_connection : str
+  disk_space
+  status : str
+  version : str
+}
+class "HeartbeatResponse" as api.schemas.v1.heartbeat_schemas.HeartbeatResponse {
+}
+class "HeartbeatResult" as api.schemas.v1.heartbeat_schemas.HeartbeatResult {
+}
+class "IEncoderHandler" as api.interfaces.i_encoder_handler.IEncoderHandler {
+  {abstract}get_count() -> Tuple[bool, Optional[int]]
+  {abstract}set_count(count: int) -> Tuple[bool, None]
+  {abstract}zero_count() -> Tuple[bool, None]
+}
+class "IGPIOHandler" as api.interfaces.i_gpio_handler.IGPIOHandler {
+  DEFAULT_BOUNCE_TIME : float
+  DEFAULT_HOLD_TIME : float
+  _button_class : Type[Button]
+  _config
+  _emergency_stop_pin : NoneType
+  _led_class : Type[LED]
+  _motor_driver
+  _reed_switch_closed : bool
+  _remote_active : bool
+  reed_switch_closed
+  remote_active
+  __init__(motor_driver, button_class: Type[Button], led_class: Type[LED], config: T)
+  _initialize_emergency_stop() -> None
+  activate_emergency_stop() -> bool
+  cleanup() -> None
+  deactivate_emergency_stop() -> bool
+  {abstract}initialize()
+  is_emergency_stop_active() -> bool
+}
+class "IMotorDriver" as api.interfaces.i_motor_driver.IMotorDriver {
+  connected
+  motor_driver_fw_version
+  motor_driver_unresponsive
+  {abstract}__init__(command_handler, serial_handler, config: RoboclawMotorDriverConfig)
+  {abstract}check_connection_health() -> None
+  {abstract}close() -> None
+  {abstract}drive_motor_closed_loop(motor_num: MotorNumber, direction: ReelDirection, speed_percentage: int, max_speed_in_pulses: int) -> MotorDriverResponse
+  {abstract}drive_motor_open_loop(motor_num: MotorNumber, direction: ReelDirection, speed_percentage: int) -> MotorDriverResponse
+  {abstract}get_active_statuses() -> list[str]
+  {abstract}get_firmware_version() -> str
+  {abstract}get_motor_speed(motor_num: MotorNumber) -> MotorDriverResponse
+  {abstract}get_statuses() -> Dict[str, Any]
+  {abstract}go_to_position(motor_num: MotorNumber, position: int, speed: int, accel: int, decel: int) -> MotorDriverResponse
+  {abstract}is_status_active(status: str) -> bool
+  {abstract}reset_statuses() -> None
+  {abstract}stop_motor(motor_num: MotorNumber) -> MotorDriverResponse
+  {abstract}update_statuses() -> bool
+}
+class "JSONConfigHandler" as api.config.json_config_handler.JSONConfigHandler {
+  deep_merge(default: Dict[str, Any], persistence: Dict[str, Any]) -> Dict[str, Any]
+  load_cable_reel_save_data() -> CableReelSaveData
+  load_json(file_path: Path) -> Dict[str, Any]
+  load_manifest() -> Dict[str, Any]
+  load_user_config() -> Dict[str, Any]
+  save_cable_reel_save_data(data: Union[CableReelSaveData, Dict[str, Any]]) -> None
+  save_json(file_path: Path, data: Dict[str, Any]) -> None
+  save_manifest(data: Dict[str, Any]) -> None
+  save_user_config(data: Dict[str, Any]) -> None
+  set_file_permissions(file_path: Path) -> None
+  setup_all_files() -> None
+  setup_file(default_path: Path, persistence_path: Path) -> None
+}
+class "LoopControlMode" as api.constants.enums.LoopControlMode {
+  name
+}
+class "LoopControlModeBase" as api.schemas.v1.shared_schemas.LoopControlModeBase {
+  loop_control_mode
+  model_config
+  map_loop_control(v: Any) -> LoopControlMode
+  model_dump()
+}
+class "LoopControlModeRequest" as api.schemas.v1.motor_reel_schemas.LoopControlModeRequest {
+}
+class "LoopControlModeResponse" as api.schemas.v1.motor_reel_schemas.LoopControlModeResponse {
+}
+class "LoopControlModeResult" as api.schemas.v1.motor_reel_schemas.LoopControlModeResult {
+}
+class "ManifestConstants" as api.constants.constants.ManifestConstants {
+  CABLE_REEL_CHASSIS_CROC_MINI : str
+  CONFIG_KEY_CABLE_REEL_CHASSIS : str
+  CONFIG_KEY_ENCODER_TYPE : str
+  CONFIG_KEY_GPIO_CONFIG_TYPE : str
+  CONFIG_KEY_MOTOR_DRIVER : str
+  ENCODERS : list
+  ENCODER_TYPE_NONE : str
+  ENCODER_TYPE_QSB : str
+  ENCODER_TYPE_ROBOCLAW : str
+  GPIO_CONFIG_BOX_CONTROL : str
+  GPIO_CONFIG_PENDANT_CONTROL : str
+  MOTOR_DRIVER_MOTORON : str
+  MOTOR_DRIVER_ROBOCLAW : str
+  NESTED_KEY_CONFIG_KEY : str
+  NESTED_KEY_TYPE : str
+}
+class "<color:red>ManifestNotConfiguredError</color>" as api.exceptions.config_exceptions.ManifestNotConfiguredError {
+  message : str
+  __init__(message)
+}
+class "ManifestSettings" as api.schemas.manifest.ManifestSettings {
+  cable_reel_chassis_type
+  encoder_type
+  gpio_control_type
+  manifest_configured : bool
+  model_config : dict
+  motor_driver_type
+  serial_handler_type
+  load()
+}
+class "MathHelper" as api.utils.math_helper.MathHelper {
+  convert_byte_arr_to_float(byte_arr: list) -> float
+  convert_bytes_to_int(bytes_to_convert: list) -> int
+  convert_bytes_to_signed_int(bytes_to_convert: list) -> int
+  convert_float_to_byte_arr(value_to_convert: float) -> list
+  convert_imperial_to_metric(value_to_convert)
+  convert_int_to_byte_arr(value_to_convert: int) -> list
+  convert_metric_to_imperial(value_to_convert)
+  convert_signed_int_to_2_byte_arr(value_to_convert: int) -> list
+  convert_signed_int_to_byte_arr(value_to_convert: int) -> list
+  float_to_16_16_fixed_point(value: float) -> int
+  float_to_22_10_fixed_point(value: float) -> int
+  scale_value(old_min, old_max, new_min, new_max, val_to_convert) -> float
+}
+class "MotorDriverFactory" as api.factories.motor_driver_factory.MotorDriverFactory {
+  _drivers : Dict[str, Type[IMotorDriver]]
+  create_driver(driver_name: str, command_handler, motor_driver_config, serial_handler_config: RoboclawSerialHandlerConfig) -> IMotorDriver
+}
+class "MotorDriverIdentifier" as api.schemas.manifest.MotorDriverIdentifier {
+  identifier : Literal['roboclaw', 'motoron']
+}
+class "MotorDriverResponse" as api.schemas.motor_driver_response.MotorDriverResponse {
+  address : Optional[int]
+  command : Optional[str]
+  current_speed : Optional[int]
+  direction
+  error : bool
+  error_msgs : Optional[List[str]]
+  motor_driver_connected : bool
+  motor_number
+  sent : bool
+  speed_percentage : int
+  target_speed : Optional[int]
+}
+class "MotorNumber" as api.constants.enums.MotorNumber {
+  name
+}
+class "MotoronBase" as api.externals.pololu.motoron.MotoronBase {
+  DEFAULT_ERROR_MASK : int
+  __DEFAULT_PROTOCOL_OPTIONS : int
+  protocol_options : int
+  __init__()
+  _send_command(cmd)
+  _send_command_and_read_response(cmd, response_length)
+  clear_latched_status_flags(flags)
+  clear_motor_fault(flags)
+  clear_motor_fault_unconditional()
+  clear_reset_flag()
+  coast_now()
+  disable_command_timeout()
+  disable_crc()
+  disable_crc_for_commands()
+  disable_crc_for_responses()
+  disable_i2c_general_call()
+  enable_crc()
+  enable_crc_for_commands()
+  enable_crc_for_responses()
+  enable_i2c_general_call()
+  get_buffered_speed(motor)
+  get_command_timeout_latched_flag()
+  get_command_timeout_milliseconds()
+  get_crc_error_flag()
+  get_current_limit(motor)
+  get_current_sense_minimum_divisor(motor)
+  get_current_sense_offset(motor)
+  get_current_sense_processed(motor)
+  get_current_sense_processed_and_speed(motor)
+  get_current_sense_raw(motor)
+  get_current_sense_raw_and_speed(motor)
+  get_current_sense_reading(motor)
+  get_current_speed(motor)
+  get_direction_change_delay_forward(motor)
+  get_direction_change_delay_reverse(motor)
+  get_error_active_flag()
+  get_error_mask()
+  get_error_response()
+  get_firmware_version()
+  get_jumper_state()
+  get_max_acceleration_forward(motor)
+  get_max_acceleration_reverse(motor)
+  get_max_deceleration_forward(motor)
+  get_max_deceleration_reverse(motor)
+  get_max_deceleration_temporary(motor)
+  get_motor_driving_flag()
+  get_motor_fault_latched_flag()
+  get_motor_faulting_flag()
+  get_motor_output_enabled_flag()
+  get_no_power_flag()
+  get_no_power_latched_flag()
+  get_protocol_error_flag()
+  get_pwm_mode(motor)
+  get_reset_flag()
+  get_starting_speed_forward(motor)
+  get_starting_speed_reverse(motor)
+  get_status_flags()
+  get_target_brake_amount(motor)
+  get_target_speed(motor)
+  get_var_s16(motor, offset)
+  get_var_u16(motor, offset)
+  get_var_u8(motor, offset)
+  get_variables(motor, offset, length)
+  get_vin_voltage()
+  get_vin_voltage_mv(reference_mv, type)
+  read_eeprom(offset, length)
+  read_eeprom_device_number()
+  reinitialize()
+  reset(ignore_nack)
+  reset_command_timeout()
+  set_all_buffered_speeds()
+  set_all_speeds()
+  set_all_speeds_now()
+  set_all_speeds_now_using_buffers()
+  set_all_speeds_using_buffers()
+  set_braking(motor, amount)
+  set_braking_now(motor, amount)
+  set_buffered_speed(motor, speed)
+  set_command_timeout_milliseconds(ms)
+  set_current_limit(motor, limit)
+  set_current_sense_minimum_divisor(motor, speed)
+  set_current_sense_offset(motor, offset)
+  set_direction_change_delay(motor, duration)
+  set_direction_change_delay_forward(motor, duration)
+  set_direction_change_delay_reverse(motor, duration)
+  set_error_mask(mask)
+  set_error_response(response)
+  set_latched_status_flags(flags)
+  set_max_acceleration(motor, accel)
+  set_max_acceleration_forward(motor, accel)
+  set_max_acceleration_reverse(motor, accel)
+  set_max_deceleration(motor, decel)
+  set_max_deceleration_forward(motor, decel)
+  set_max_deceleration_reverse(motor, decel)
+  set_protocol_options(options)
+  set_protocol_options_locally(options)
+  set_pwm_mode(motor, mode)
+  set_speed(motor, speed)
+  set_speed_now(motor, speed)
+  set_starting_speed(motor, speed)
+  set_starting_speed_forward(motor, speed)
+  set_starting_speed_reverse(motor, speed)
+  set_variable(motor, offset, value)
+  write_eeprom(offset, value)
+  write_eeprom16(offset, value)
+  write_eeprom_alternative_device_number(number)
+  write_eeprom_baud_rate(baud)
+  write_eeprom_communication_options(options)
+  write_eeprom_device_number(number)
+  write_eeprom_disable_alternative_device_number()
+  write_eeprom_response_delay(delay)
+}
+class "MotoronCommand" as api.hardware.drivers.motoron.motoron_command_handler.MotoronCommand {
+  callback : Optional[Callable]
+  execute_callback : Optional[Callable]
+  execution_completed
+  name : str
+  params : Dict[str, Any]
+  priority : int
+  result : NoneType
+  success : bool
+  timestamp
+  __eq__(other)
+  __hash__()
+  __init__(name: str, params: Dict[str, Any], priority: int, callback: Callable, execute_callback: Callable)
+  __lt__(other)
+  set_result(success: bool, result: Any)
+  wait_for_completion(timeout: float) -> bool
+}
+class "MotoronCommandHandler" as api.hardware.drivers.motoron.motoron_command_handler.MotoronCommandHandler {
+  MERGEABLE_COMMANDS : set
+  MOTION_COMMANDS : set
+  command_dict : Dict[Tuple, MotoronCommand]
+  command_queue
+  is_processing : bool
+  motoron
+  queue_lock
+  __init__(motoron: MotoronI2C)
+  _default_execute(command: MotoronCommand)
+  _execute_command(command: MotoronCommand)
+  _process_queue()
+  _remove_conflicting_motion_commands(new_command)
+  add_command(command: MotoronCommand)
+  flush()
+  get_queue_size()
+}
+class "MotoronI2C" as api.externals.pololu.motoron.MotoronI2C {
+  _msg : i2c_msg
+  _read_response
+  _send_command_core
+  address : int
+  bus
+  __init__()
+  _mpy_read_response(length)
+  _mpy_send_command_core(cmd, send_crc)
+  _smbus_read_response(length)
+  _smbus_send_command_core(cmd, send_crc)
+  set_bus(bus)
+}
+class "MotoronMotorDriver" as api.hardware.drivers.motoron.motoron_motor_driver.MotoronMotorDriver {
+  MAX_SPEED : int
+  __command_handler
+  __config
+  __max_speed : int
+  __mc
+  __state_handler
+  connected
+  motor_driver_fw_version
+  motor_driver_unresponsive
+  state
+  __add_command(name: str, params: Dict[str, Any], priority: int, callback: callable)
+  __check_and_clear_faults()
+  __init__(config: MotoronMotorDriverConfig)
+  __initialize_motor()
+  check_connection_health() -> None
+  close() -> None
+  configure_motor_driver() -> Dict[str, Any]
+  drive_motor_closed_loop(motor_num: MotorNumber, direction: ReelDirection, speed_percentage: int, max_speed_in_pulses: int) -> MotorDriverResponse
+  drive_motor_open_loop(motor_num: MotorNumber, direction: ReelDirection, speed_percentage: int) -> MotorDriverResponse
+  flush() -> Dict[str, Any]
+  get_active_statuses() -> list[str]
+  get_firmware_version() -> str
+  get_motor_speed(motor_num: MotorNumber) -> MotorDriverResponse
+  get_statuses() -> Dict[str, Any]
+  go_to_position(motor_num: MotorNumber, position: int, speed: int, accel: int, decel: int) -> MotorDriverResponse
+  is_status_active(status: str) -> bool
+  reset_connection() -> None
+  reset_statuses() -> None
+  stop_motor(motor_num: MotorNumber) -> MotorDriverResponse
+  update_statuses() -> bool
+}
+class "MotoronMotorDriverConfig" as api.schemas.configs.MotoronMotorDriverConfig {
+  description : str
+  i2c_address : int
+  i2c_bus : int
+  motor_direction : int
+  name : str
+  serial_port : str
+}
+class "MotoronState" as api.hardware.drivers.motoron.motoron_state.MotoronState {
+  current_speed : NoneType
+  current_speed : int
+  is_connected : bool
+  is_connected : bool
+  is_error_active
+  is_error_active : bool
+  is_motor_driving
+  is_motor_driving : bool
+  is_motor_faulting
+  is_motor_faulting : bool
+  is_motor_output_enabled
+  is_motor_output_enabled : bool
+  is_no_power
+  is_no_power : bool
+  is_reset
+  is_reset : bool
+  motor_driver_fw_version : str
+  motor_driver_fw_version : str
+  status_flags : NoneType
+  status_flags : int
+  target_speed : NoneType
+  target_speed : int
+  vin_voltage : NoneType
+  vin_voltage : int
+  __init__(self, motor_driver_fw_version: str, is_connected: bool, status_flags: int, is_reset: bool, is_motor_faulting: bool, is_motor_output_enabled: bool, is_motor_driving: bool, is_no_power: bool, is_error_active: bool, current_speed: int, target_speed: int, vin_voltage: int) -> None
+}
+class "MotoronStateHandler" as api.hardware.drivers.motoron.motoron_state_handler.MotoronStateHandler {
+  __command_handler
+  __mc
+  __state
+  state
+  __add_command(name: str, params: Dict[str, Any], priority: int, callback: callable)
+  __init__(mc: MotoronI2C, command_handler: MotoronCommandHandler)
+  check_and_clear_faults()
+  update_all(motor_num: int)
+  update_connection_status()
+  update_firmware_version()
+  update_motor_speeds(motor_num: int)
+  update_status_flags()
+  update_vin_voltage()
+}
+class "NullControlGPIOHandler" as api.hardware.gpio.null_gpio_handler.NullControlGPIOHandler {
+  remote_active : bool
+  __init__(motor_driver, button_class: Type[Button], led_class: Type[LED], config)
+  initialize() -> None
+}
+class "NullEncoderConfig" as api.schemas.configs.NullEncoderConfig {
+}
+class "NullEncoderHandler" as api.hardware.encoders.null_encoder_handler.NullEncoderHandler {
+  {abstract}get_count() -> Tuple[bool, Optional[int]]
+  {abstract}set_count(count: int) -> Tuple[bool, None]
+  {abstract}zero_count() -> Tuple[bool, None]
+}
+class "NullGPIOConfig" as api.schemas.configs.NullGPIOConfig {
+}
+class "NullMotorDriverConfig" as api.schemas.configs.NullMotorDriverConfig {
+}
+class "NullSerialHandlerConfig" as api.schemas.configs.NullSerialHandlerConfig {
+  port_name : NoneType
+}
+class "Path" as pathlib.Path {
+  __slots__ : tuple
+  __enter__()
+  {abstract}__exit__(t, v, tb)
+  __new__()
+  _make_child_relpath(part)
+  _scandir()
+  absolute()
+  chmod(mode)
+  cwd()
+  exists()
+  expanduser()
+  glob(pattern)
+  group()
+  hardlink_to(target)
+  home()
+  is_block_device()
+  is_char_device()
+  is_dir()
+  is_fifo()
+  is_file()
+  is_mount()
+  is_socket()
+  is_symlink()
+  iterdir()
+  lchmod(mode)
+  link_to(target)
+  lstat()
+  mkdir(mode, parents, exist_ok)
+  open(mode, buffering, encoding, errors, newline)
+  owner()
+  read_bytes()
+  read_text(encoding, errors)
+  readlink()
+  rename(target)
+  replace(target)
+  resolve(strict)
+  rglob(pattern)
+  rmdir()
+  samefile(other_path)
+  stat()
+  symlink_to(target, target_is_directory)
+  touch(mode, exist_ok)
+  unlink(missing_ok)
+  write_bytes(data)
+  write_text(data, encoding, errors, newline)
+}
+class "PendantControlGPIOConfig" as api.schemas.configs.PendantControlGPIOConfig {
+  emergency_stop_pin : int
+  manual_buttons_enabled : bool
+  reed_switch_pin : int | None
+  rgb_led_blue_pin : int
+  rgb_led_green_pin : int
+  rgb_led_red_pin : int
+  unwind_btn_pin : int
+  wind_btn_pin : int
+}
+class "PendantControlGPIOHandler" as api.hardware.gpio.control_pendant_gpio_handler.PendantControlGPIOHandler {
+  LED_BOOT : tuple
+  LED_COLORS : dict
+  LED_HEARTBEAT_INTERVAL : float
+  LED_OFF : tuple
+  PCF8591_ADDRESS : int
+  PCF8591_CONTROL_BYTE : int
+  POLLING_INTERVAL_SECS : float
+  POT_CHANGE_THRESHOLD : int
+  SAFETY_TIMEOUT : int
+  __bus
+  __current_mode
+  __deadzone_threshold : float
+  __hysteresis : int
+  __is_boot_complete : bool
+  __last_stop_time : float
+  __last_value : NoneType
+  __led_thread : NoneType
+  __manual_buttons_enabled : bool
+  __on_change_callback : Callable[[int, float], None], NoneType
+  __polling_thread : NoneType
+  __pot_lut
+  __pot_needs_reset : bool
+  __pot_speed : int
+  __reed_switch : Optional[Button]
+  __rgb_led_blue_pin : Optional[led_class]
+  __rgb_led_green_pin : Optional[led_class]
+  __rgb_led_red_pin : Optional[led_class]
+  __safety_timer
+  __stop_led_thread
+  __stop_polling
+  __unwind_btn
+  __value_buffer
+  __wind_btn
+  _config
+  _remote_active : bool
+  remote_active : bool
+  __adjust_speed_of_motor(motor_num: MotorNumber, speed: int) -> None
+  __apply_deadzone(value: float) -> float
+  __apply_lut_to_potentiometer(normalized_value: float) -> float
+  __blink_led(color1: Tuple[int, int, int], color2: Tuple[int, int, int]) -> None
+  __check_safety_condition(direction: ReelDirection) -> None
+  __control_led() -> None
+  __drive_motor(direction: ReelDirection, speed_percentage: int) -> None
+  __init__(motor_driver: IMotorDriver, button_class: Type[Button], led_class: Type[LED], config: PendantControlGPIOConfig)
+  __initialize_lut()
+  __initialize_pcf8591() -> None
+  __initialize_reed_switch() -> None
+  __initialize_rgb_led_pins() -> None
+  __initialize_wind_unwind_buttons() -> None
+  __make_linear_lut_float(profile, size)
+  __on_btn_released() -> None
+  __on_reed_switch_closed() -> None
+  __on_reed_switch_opened() -> None
+  __on_unwind_btn_pressed() -> None
+  __on_wind_btn_pressed() -> None
+  __poll_potentiometer() -> None
+  __safety_timeout() -> None
+  __set_led_color(color: Tuple[int, int, int]) -> None
+  __start_led_thread() -> None
+  __start_polling() -> None
+  __start_safety_timer() -> None
+  cleanup() -> None
+  initialize() -> None
+  normalize_potentiometer_value(value: int) -> float
+  read_potentiometer() -> int
+  set_mode(mode: RgbLedControlMode) -> None
+  set_on_change_callback(callback: Callable[[int, float], None]) -> None
+}
+class "PriorityQueue" as queue.PriorityQueue {
+  queue : list
+  _get()
+  _init(maxsize)
+  _put(item)
+  _qsize()
+}
+class "ProjectPaths" as api.constants.constants.ProjectPaths {
+  ALEMBIC_DIR : str
+  ALEMBIC_VERSIONS : str
+  API_DIR : str
+  BASE_DIR
+  CABLE_REEL_SAVE_DATA : str
+  CONFIG_DIR : str
+  DB_DIR : str
+  DEFAULT_CABLE_REEL_SAVE_DATA : str
+  DEFAULT_CONFIG : str
+  DEFAULT_HARDWARE_CONFIGS_DIR : str
+  DEFAULT_SUB_DIR : str
+  DEV_DB : str
+  GENERAL_LOG : str
+  HARDWARE_CONFIGS : str
+  LOG_CONFIG : str
+  LOG_DIR : str
+  LOG_FILE_BASENAMES : list[str]
+  MANIFEST_FILE : str
+  MANIFEST_TEMPLATE : str
+  PERSISTENCE_DIR : str
+  PROD_DB : str
+  TEST_DB : str
+  USER_CONFIG : str
+  WARNING_LOG : str
+  get_path(attr_name)
+}
+class "PurePath" as pathlib.PurePath {
+  __slots__ : tuple
+  _cached_cparts
+  _cparts
+  _drv
+  _hash
+  _parts
+  _pparts : tuple
+  _root
+  _str
+  anchor
+  drive : property
+  name
+  parent
+  parents
+  parts
+  root : property
+  stem
+  suffix
+  suffixes
+  __bytes__()
+  __eq__(other)
+  __fspath__()
+  __ge__(other)
+  __gt__(other)
+  __hash__()
+  __le__(other)
+  __lt__(other)
+  __new__()
+  __reduce__()
+  __repr__()
+  __rtruediv__(key)
+  __str__()
+  __truediv__(key)
+  _format_parsed_parts(drv, root, parts)
+  _from_parsed_parts(drv, root, parts)
+  _from_parts(args)
+  _make_child(args)
+  _parse_args(args)
+  as_posix()
+  as_uri()
+  is_absolute()
+  is_relative_to()
+  is_reserved()
+  joinpath()
+  match(path_pattern)
+  relative_to()
+  with_name(name)
+  with_stem(stem)
+  with_suffix(suffix)
+}
+class "QSBEncoderConfig" as api.schemas.configs.QSBEncoderConfig {
+  baudrate : int
+  encoder_reversal : bool
+  port_name : str | None
+  serial_timeout : float
+}
+class "QSBEncoderHandler" as api.hardware.encoders.qsb_encoder_handler.QSBEncoderHandler {
+  ENCODER_MIDPOINT : int
+  SERIAL_SLEEP : float
+  __config
+  __encoder_origin : int
+  __encoder_reversal
+  __version : str
+  port : NoneType
+  serial
+  __del__()
+  __get_version() -> str
+  __init__(config: QSBEncoderConfig)
+  _configure_qsb()
+  _find_qsb_s_port()
+  get_count() -> Tuple[bool, int]
+  initialize()
+  set_count(count: int, motor_num: MotorNumber) -> bool
+  zero_count() -> bool
+}
+class "Queue" as queue.Queue {
+  __class_getitem__ : classmethod
+  all_tasks_done : Condition
+  maxsize : int
+  mutex
+  not_empty : Condition
+  not_full : Condition
+  queue
+  unfinished_tasks : int
+  __init__(maxsize)
+  _get()
+  _init(maxsize)
+  _put(item)
+  _qsize()
+  empty()
+  full()
+  get(block, timeout)
+  get_nowait()
+  join()
+  put(item, block, timeout)
+  put_nowait(item)
+  qsize()
+  task_done()
+}
+class "RandNameGenerator" as api.utils.random_name_generator.RandNameGenerator {
+  FIRST_NAME : list
+  LAST_NAME : list
+  generate_name() -> str
+}
+class "ReelAPISettings" as api.main.core_settings.ReelAPISettings {
+  API_DESCRIPTION : str
+  API_PREFIX : str
+  API_V1_PREFIX : str
+  API_V2_PREFIX : str
+  API_VERSION : str
+  DOMAIN : str
+  ENVIRONMENT : Literal['local', 'production', 'testing']
+  FRONTEND_ORIGIN : str
+  JWT_EXPIRE_MINUTES : int
+  LOG_LEVEL : str
+  MAX_PASSWORD : int
+  MAX_USERNAME : int
+  MIN_PASSWORD : int
+  MIN_USERNAME : int
+  PROJECT_NAME : str
+  PROTOCOL : str
+  SECRET_KEY : str
+  model_config
+}
+class "ReelAction" as api.constants.enums.ReelAction {
+  name
+  __str__()
+}
+class "ReelComponentFactory" as api.factories.reel_component_factory.ReelComponentFactory {
+  create_components(manifest, manager_config, motor_driver_config, serial_handler_config, encoder_config)
+}
+class "ReelController" as api.services.reel_controller.ReelController {
+  MAX_RETRIES : int
+  MOTOR_ACCELERATION : int
+  OPPOSITE_DIRECTIONS : dict
+  RETRY_DELAY : float
+  __are_reel_safeguards_enabled : bool
+  __calibration_factor : float, float | None
+  __calibration_start_pulses : Optional[int | None], int, NoneType
+  __curr_cable_position : float
+  __encoder_controller
+  __is_calibrating : bool
+  __jog_semaphore
+  __loop_control_mode
+  __m1_curr_wind_speed : int
+  __m1_opposite_direction_timer : Optional[Timer | None]
+  __m2_curr_wind_speed : int
+  __m2_opposite_direction_timer : Optional[Timer | None]
+  __max_meters_per_second : float
+  __max_speed_meters_per_second : float
+  __motor_driver
+  __update_status_failures : int
+  cable_position_update_event
+  calibration_factor
+  connected : bool
+  current_cable_position_meters
+  current_cable_position_meters : int
+  current_running_speed : float
+  go_to_position : float, int
+  is_calibrating
+  is_disconnected
+  is_going_to_mode : bool
+  is_jogging : bool
+  loop_control_mode
+  loop_control_mode
+  m1_curr_direction : STOP
+  m1_going_opposite_direction : bool
+  m1_motor_direction
+  m1_wind_speed
+  m2_curr_direction : STOP
+  m2_going_opposite_direction : bool
+  m2_motor_direction
+  m2_wind_speed
+  motor_driver_unresponsive
+  motor_driver_version
+  raw_encoder_value : int
+  safeguards_enabled
+  safeguards_enabled : bool
+  __clear_calibration_routine() -> None
+  __drive_motor_closed_control(motor_num: MotorNumber, direction: ReelDirection, speed_percentage: int) -> MotorDriverResponse
+  __go_to_depth_closed_loop(motor_num: MotorNumber, depth_in_meters: float) -> MotorDriverResponse
+  __go_to_depth_open_loop(motor_num: MotorNumber, depth_in_meters: float) -> MotorDriverResponse
+  __init__(motor_controller: IMotorDriver, encoder_controller: EncoderController, calibration_factor: int, m1_speed_percentage: int, m2_speed_percentage: int, cable_position_to_restore: int, max_meters_per_second: float, safeguards_enabled: bool)
+  __jog_callback(motor_num: MotorNumber) -> None
+  __opposite_direction_callback(bool_name_to_set: str, timer_name_to_set: str) -> None
+  __update_motor_current_dir(motor_num: MotorNumber, direction: ReelDirection) -> None
+  __update_motor_wind_speed(motor_num: MotorNumber, speed_percentage: int) -> None
+  add_cable_offset(offset_to_add_in_meters: float, motor_num: MotorNumber) -> bool
+  adjust_speed_of_motor(motor_num: MotorNumber, speed: int) -> MotorDriverResponse
+  cancel_calibration_routine() -> bool
+  close() -> bool
+  configure_motor_driver() -> dict
+  connect() -> bool
+  drive_motor(motor_num: MotorNumber, direction: ReelDirection, speed_percentage: int) -> MotorDriverResponse
+  finish_calibration_routine(tether_length: float) -> int
+  flush()
+  get_motor_controller_status() -> dict
+  go_to_depth(motor_num: MotorNumber, depth_in_meters: float) -> MotorDriverResponse
+  jog_reel(motor_num: MotorNumber) -> MotorDriverResponse
+  reset_connection() -> None
+  {abstract}restore_encoder_count(amount_in_meters) -> dict
+  set_cable_position(motor_num: MotorNumber, amount_in_meters: float) -> dict
+  start_calibration_routine() -> bool
+  stop_all_motors() -> bool
+  stop_motor(motor_num: MotorNumber) -> bool
+  update_encoder_count() -> None
+  update_motor_driver_statuses() -> bool
+  update_motor_speed(motor_number: MotorNumber) -> MotorDriverResponse
+  zero_cable_position(motor_num: MotorNumber) -> bool
+}
+class "ReelDirection" as api.constants.enums.ReelDirection {
+  name
+}
+class "ReelManager" as api.services.reel_manager.ReelManager {
+  DEFAULT_CALIBRATION_FACTOR : int
+  DEFAULT_MAX_METERS_PER_SECOND : float
+  DEFAULT_MOTOR_SPEED : int
+  DEFAULT_ROBOCLAW_ADDRESS : int
+  THREAD_HEALTH_CHECK_INTERVAL : int
+  USER_COLORS : list
+  __api_settings
+  __encoder_controller
+  __encoder_type : str
+  __gpio_handler
+  __health_check_thread
+  __manager_config
+  __monitor_motor_thread
+  __motor_driver
+  __reel_controller
+  _curr_sessions : dict
+  cable_position_meters
+  current_running_speed
+  encoder_installed
+  encoder_type
+  is_encoder_disconnected
+  loop_control_mode
+  loop_control_mode
+  m1_motor_direction
+  m1_wind_speed
+  m2_motor_direction
+  m2_wind_speed
+  motor_driver_fw_version
+  reel_safeguards_enabled
+  reel_safeguards_enabled : bool
+  remote_active
+  __check_remote_active()
+  __check_thread_health()
+  __get_reel_settings() -> ReelSettings
+  __get_remote_active_cb() -> bool
+  __init__(manager_config: CableReelManagerConfig, motor_driver_config, serial_handler_config, encoder_config, gpio_control_config, manifest: ManifestSettings, api_settings)
+  __on_encoder_update() -> None
+  __restart_monitor_thread()
+  __save_encoder_data() -> None
+  __start_monitor_thread(config, save_data: CableReelSaveData)
+  _generate_current_users_response(session_id_to_ignore: str) -> list
+  activate_emergency_stop(session_id: str) -> EmergencyStopActivateResponse
+  add_cable_offset(session_id: str, username: str, offset_to_add_in_meters: float, motor_num: MotorNumber) -> AddCableOffsetResponse
+  cancel_calibration(session_id: str, username: str) -> CancelCalibrationResponse
+  deactivate_emergency_stop(session_id: str) -> EmergencyStopDeactivateResponse
+  drive_motor(motor_num: MotorNumber, direction: ReelDirection, speed_percentage: int) -> MotorDriverResponse
+  finish_calibration_routine(session_id: str, username: str, tether_length: float) -> FinishCalibrationResponse
+  generate_heartbeat_response(session_id: str, result: dict) -> HeartbeatResponse
+  get_cable_position(session_id: str, username: str, motor_num: MotorNumber) -> GetCablePositionResponse
+  get_cable_reel_info() -> CableReelInfoResponse
+  get_heartbeat(session_id: str, username: str) -> HeartbeatResponse
+  get_motor_driver_status() -> dict
+  get_reel_settings(session_id: str, username: str) -> ReelSettingsResponse
+  go_to_position(username: str, session_id: str, motor_num: MotorNumber, position_in_meters: float) -> GoToResponse
+  is_emergency_stop_active() -> bool
+  jog_reel_wind(session_id: str, username: str, motor_num: MotorNumber) -> ReelMotorControlResponse
+  set_cable_position(session_id: str, username: str, count_in_meters: float, motor_num: MotorNumber) -> SetEncoderCountResponse
+  start_calibration(session_id: str, username: str) -> StartCalibrationResponse
+  stop_reel(session_id: str, username: str, motor_num: MotorNumber) -> ReelMotorControlResponse
+  terminate() -> None
+  unwind_reel(session_id: str, username: str, speed: int, motor_num: MotorNumber) -> ReelMotorControlResponse
+  update_current_sessions(session_id: str) -> None
+  update_reel_settings(session_id: str, username: str, settings: UpdateReelSettingsRequest) -> UpdateReelSettingsResponse
+  update_reel_speed(session_id: str, username: str, motor_num: MotorNumber, speed: int) -> ReelMotorControlResponse
+  wind_reel(session_id: str, username: str, speed: int, motor_num: MotorNumber) -> ReelMotorControlResponse
+  zero_cable_position(session_id: str, username: str, motor_num: MotorNumber) -> ZeroCablePositionResponse
+}
+class "ReelManagerWrapper" as api.services.reel_manager_wrapper.ReelManagerWrapper {
+  reel_manager : Optional[ReelManager | None], NoneType
+  __init__()
+  get_reel_manager()
+  initialize(manager_conf: CableReelManagerConfig, motor_driver_config, manifest: ManifestSettings, serial_conf: RoboclawSerialHandlerConfig, encoder_config, physical_control_config, api_settings)
+  terminate()
+}
+class "ReelMonitorThread" as api.services.reel_monitor_thread.ReelMonitorThread {
+  CHECK_ENCODER_STOPPED_MOVING_TIMEOUT : float
+  DEFAULT_MAX_TETHER_LENGTH_METERS : float
+  MINIMUM_ENCODER_MOVEMENT_THRESHOLD : int
+  __encoder_installed : bool
+  __get_remote_active_cb : Callable
+  __last_raw_enc_value : int
+  __last_thread_heartbeat
+  __max_cable_lock
+  __max_tether_length_logged : bool
+  __max_tether_length_meters
+  __motor_controller
+  __motor_over_current_timestamp : NoneType, Optional[time]
+  __reel_controller
+  __terminate_monitor
+  __thread_is_running : bool
+  __time_since_last_check
+  __zero_point_gutter
+  __zero_point_gutter_lock
+  cable_position_to_restore : int
+  max_tether_length_meters
+  max_tether_length_meters
+  zero_point_gutter
+  zero_point_gutter
+  __check_go_to_mode() -> None
+  __check_motor_movement_and_direction() -> bool
+  __check_over_current_limit() -> None
+  __configure_motor_driver() -> None
+  __init__(motor_driver: ReelController, roboclaw_handler: RoboclawMotorDriver, get_remote_active_cb: Callable, config: ReelMonitorThreadConfig)
+  __monitor_motor() -> None
+  __restore_encoder_count() -> None
+  __stop_motor_if_going_negative() -> bool
+  __stop_motor_on_fault() -> None
+  get_last_heartbeat()
+  is_alive()
+  is_open_loop() -> bool
+  safeguards_enabled() -> bool
+  terminate() -> None
+}
+class "ReelMonitorThreadConfig" as api.schemas.configs.ReelMonitorThreadConfig {
+  cable_position_to_restore : float | None
+  encoder_installed : bool
+  max_tether_length_meters : float | None
+  zero_point_gutter : float | None
+}
+class "ReelMotorControlRequest" as api.schemas.v1.motor_reel_schemas.ReelMotorControlRequest {
+  speed : int
+}
+class "ReelMotorControlResponse" as api.schemas.v1.motor_reel_schemas.ReelMotorControlResponse {
+}
+class "ReelMotorControlResult" as api.schemas.v1.motor_reel_schemas.ReelMotorControlResult {
+  speed : int
+}
+class "ReelSettings" as api.schemas.v1.motor_reel_schemas.ReelSettings {
+  loop_control_mode
+  max_cable_length_meters : float
+  reel_safeguards_enabled : bool
+  zero_point_gutter : float
+}
+class "ReelSettingsResponse" as api.schemas.v1.motor_reel_schemas.ReelSettingsResponse {
+}
+class "ReelSettingsResult" as api.schemas.v1.motor_reel_schemas.ReelSettingsResult {
+  settings
+}
+class "ReelState" as api.schemas.v1.heartbeat_schemas.ReelState {
+  cable_position : float
+  current_speed_ms : float
+  is_remote_active : bool
+  loop_control_mode : int
+  motor_direction : int
+  motor_driver_unresponsive : bool
+  reel_safeguards_enabled : bool
+  speed_percentage : int
+}
+class "ReelStatus" as api.schemas.v1.heartbeat_schemas.ReelStatus {
+  custom_status : dict
+  estop_active : Optional[bool]
+  is_encoder_disconnected : bool
+  is_error_active : bool
+  is_motor_driving : bool
+  is_motor_faulting : Optional[bool]
+  is_motor_output_enabled : bool
+  is_no_power : Optional[bool]
+  is_reset : Optional[bool]
+  logic_voltage_high : Optional[bool]
+  logic_voltage_low : Optional[bool]
+  m1_current_error : Optional[bool]
+  m1_driver_fault : Optional[bool]
+  m1_over_current : Optional[bool]
+  m1_position_error : Optional[bool]
+  m1_speed_error : Optional[bool]
+  main_voltage_high : Optional[bool]
+  main_voltage_low : Optional[bool]
+  position_error_limit_warning : Optional[bool]
+  remote_active : bool
+  s4_signal_triggered : Optional[bool]
+  s5_signal_triggered : Optional[bool]
+  speed_error_limit_warning : Optional[bool]
+  temp_error : Optional[bool]
+  temp_warning : Optional[bool]
+}
+class "RgbLedControlMode" as api.constants.enums.RgbLedControlMode {
+  name
+}
+class "RoboclawCommands" as api.hardware.drivers.roboclaw.roboclaw_commands.RoboclawCommands {
+  FLAGBOOTLOADER : int
+  GETBUFFERS : int
+  GETCONFIG : int
+  GETCURRENTS : int
+  GETDEADBAND : int
+  GETENCODERMODE : int
+  GETERROR : int
+  GETLBATT : int
+  GETM1ENC : int
+  GETM1ISPEED : int
+  GETM1MAXCURRENT : int
+  GETM1SPEED : int
+  GETM2ENC : int
+  GETM2ISPEED : int
+  GETM2MAXCURRENT : int
+  GETM2SPEED : int
+  GETMBATT : int
+  GETMINMAXLOGICVOLTAGES : int
+  GETMINMAXMAINVOLTAGES : int
+  GETPINFUNCTIONS : int
+  GETPWMMODE : int
+  GETPWMS : int
+  GETTEMP : int
+  GETTEMP2 : int
+  GETVERSION : int
+  GOTOM1POSITION : int
+  GOTOM2POSITION : int
+  M17BIT : int
+  M1BACKWARD : int
+  M1DUTY : int
+  M1DUTYACCEL : int
+  M1FORWARD : int
+  M1SPEED : int
+  M1SPEEDACCEL : int
+  M1SPEEDACCELDECCELPOS : int
+  M1SPEEDACCELDIST : int
+  M1SPEEDDIST : int
+  M27BIT : int
+  M2BACKWARD : int
+  M2DUTY : int
+  M2DUTYACCEL : int
+  M2FORWARD : int
+  M2SPEED : int
+  M2SPEEDACCEL : int
+  M2SPEEDACCELDECCELPOS : int
+  M2SPEEDACCELDIST : int
+  M2SPEEDDIST : int
+  MIXEDBACKWARD : int
+  MIXEDDUTY : int
+  MIXEDDUTYACCEL : int
+  MIXEDFB : int
+  MIXEDFORWARD : int
+  MIXEDLEFT : int
+  MIXEDLR : int
+  MIXEDRIGHT : int
+  MIXEDSPEED : int
+  MIXEDSPEED2ACCEL : int
+  MIXEDSPEED2ACCELDIST : int
+  MIXEDSPEEDACCEL : int
+  MIXEDSPEEDACCELDECCELPOS : int
+  MIXEDSPEEDACCELDIST : int
+  MIXEDSPEEDDIST : int
+  READEEPROM : int
+  READM1PID : int
+  READM1POSPID : int
+  READM2PID : int
+  READM2POSPID : int
+  READNVM : int
+  READSERIALTIMEOUT : int
+  RESETENC : int
+  RESTOREDEFAULTS : int
+  SETCONFIG : int
+  SETDEADBAND : int
+  SETLOGICVOLTAGES : int
+  SETM1DEFAULTACCEL : int
+  SETM1ENCCOUNT : int
+  SETM1ENCODERMODE : int
+  SETM1MAXCURRENT : int
+  SETM1PID : int
+  SETM1POSPID : int
+  SETM2DEFAULTACCEL : int
+  SETM2ENCCOUNT : int
+  SETM2ENCODERMODE : int
+  SETM2MAXCURRENT : int
+  SETM2PID : int
+  SETM2POSPID : int
+  SETMAINVOLTAGES : int
+  SETMAXLB : int
+  SETMAXMB : int
+  SETMINLB : int
+  SETMINMB : int
+  SETPINFUNCTIONS : int
+  SETPWMMODE : int
+  SETSERIALTIMEOUT : int
+  WRITEEEPROM : int
+  WRITENVM : int
+}
+class "RoboclawEncoderConfig" as api.schemas.configs.RoboclawEncoderConfig {
+  baudrate : int
+  port_name : str
+  port_timeout : float
+  roboclaw_address : int
+  serial_timeout_ms : int
+}
+class "RoboclawEncoderHandler" as api.hardware.encoders.roboclaw_encoder.RoboclawEncoderHandler {
+  DEFAULT_ACK_ATTEMPTS : int
+  MAX_READ_ATTEMPTS : int
+  READ_RETRY_DELAY : float
+  __command_handler
+  __roboclaw_address : int
+  __init__(command_handler: CommandHandler, roboclaw_address: int)
+  get_count() -> Tuple[bool, Optional[int]]
+  set_count(count: int, motor_num: MotorNumber) -> bool
+  zero_count() -> bool
+}
+class "RoboclawMotorDriver" as api.hardware.drivers.roboclaw.roboclaw_motor_driver.RoboclawMotorDriver {
+  COMMAND_SPECIFIC_ACK_ATTEMPTS : dict
+  DEFAULT_ACK_ATTEMPTS : int
+  DEFAULT_BAUDRATE : int
+  DEFAULT_MAX_SPEED : int
+  DEFAULT_PORT : str
+  DEFAULT_PORT_TIMEOUT : float
+  DEFAULT_ROBOCLAW_ADDRESS : int
+  DEFAULT_SPEED_DEADZONE : int
+  DEFAULT_TIMEOUT : float
+  MAX_READ_ATTEMPTS : int
+  READ_RETRY_DELAY : float
+  SERIAL_TIMEOUT_MS : int
+  START_ACCELERATION : int
+  STATUS_NUM_FOR_ACTIVE : int
+  STOP_ACCELERATION : int
+  __command_handler
+  __pid_handler
+  __protocol_helper
+  __roboclaw_address : int
+  __send_semaphore
+  __serial_handler
+  connected
+  motor_driver_fw_version
+  motor_driver_unresponsive
+  state
+  __build_command(cmd: str, values: list[int]) -> list[int]
+  __init__(command_handler: CommandHandler, serial_handler, config: RoboclawMotorDriverConfig)
+  __send_command(address: int, command: str, value: list) -> bool
+  __write_eeprom_settings() -> bool
+  check_connection_health() -> None
+  close() -> None
+  drive_motor_closed_loop(motor_num: MotorNumber, direction: ReelDirection, speed_percentage: int, max_speed_in_pulses: int) -> MotorDriverResponse
+  drive_motor_open_loop(motor_num: MotorNumber, direction: ReelDirection, speed_percentage: int) -> MotorDriverResponse
+  flush() -> None
+  flush_input() -> None
+  flush_output() -> None
+  get_active_statuses() -> list[str]
+  get_firmware_version() -> str
+  get_motor_speed(motor_num: MotorNumber) -> dict
+  get_statuses() -> dict
+  go_to_position(motor_num: MotorNumber, position: int, speed: int, accel: int, decel: int) -> dict
+  is_status_active(status: str) -> bool
+  read_velocity_pid_settings() -> dict
+  reset_connection() -> None
+  reset_statuses() -> None
+  send_command(address: int, command: str, value: list) -> bool
+  set_pin_functions(s2_val: int, s3_val: int, s4_val: int) -> dict
+  set_position_pid_variables() -> None
+  set_velocity_pid_variables() -> None
+  stop_motor(motor_num: MotorNumber) -> dict
+  update_statuses() -> bool
+}
+class "RoboclawMotorDriverConfig" as api.schemas.configs.RoboclawMotorDriverConfig {
+  description : str
+  name : str
+  position_d : float
+  position_i : float
+  position_p : float
+  roboclaw_address : int
+  velocity_d : float
+  velocity_i : float
+  velocity_p : float
+  velocity_qpps : int
+}
+class "RoboclawPIDHandler" as api.hardware.drivers.roboclaw.roboclaw_pid_handler.RoboclawPIDHandler {
+  DEFAULTS : dict
+  __position_d : int
+  __position_deadzone : int
+  __position_i : int
+  __position_max_i : int
+  __position_max_pos : int
+  __position_min_pos : int
+  __position_p : int
+  __send_command_cb : Callable
+  __velocity_d : int
+  __velocity_i : int
+  __velocity_p : int
+  __velocity_qpps : int
+  __init__(send_command_cb: Callable, velocity_p: float, velocity_i: float, velocity_d: float, velocity_qpps: int, position_p: float, position_i: float, position_d: float, position_max_i: int, position_deadzone: int, position_min_pos: int, position_max_pos: int)
+  set_position_pid_variables() -> None
+  set_velocity_pid_variables() -> None
+}
+class "RoboclawProtocolHelper" as api.hardware.drivers.roboclaw.roboclaw_protocol_helper.RoboclawProtocolHelper {
+  ACK_VALUE : int
+  RESPONSE_CRC_BYTES : int
+  crc : int
+  __init__()
+  __should_crc(cmd: str) -> bool
+  _clear_crc() -> None
+  build_command(address: int, cmd: str, values: list) -> list
+  crc_update(data: str | int | bytes) -> None
+  decode_firmware_version(raw_string: list) -> str
+  get_num_cmd_response_bytes(cmd: str) -> int
+  is_valid_command(command_name: str) -> bool
+  should_verify_cmd(cmd: str) -> bool
+  verify_crc(crc_bytes: list) -> bool
+}
+class "RoboclawSerialHandlerConfig" as api.schemas.configs.RoboclawSerialHandlerConfig {
+  baudrate : int
+  port_name : str
+  port_timeout : float
+  roboclaw_address : int
+  serial_timeout_ms : int
+}
+class "RoboclawStateHandler" as api.hardware.drivers.roboclaw.roboclaw_state_handler.RoboclawStateHandler {
+  STATUS_BITS : dict
+  STATUS_NUM_FOR_ACTIVE : int
+  __active_statuses : set, set[str]
+  __motor_driver_version : str
+  __status_counters : dict[str, int]
+  motor_driver_fw_version
+  __decode_firmware_version(version_bytes: list[int]) -> str
+  __getattr__(name: str) -> Union[int, bool]
+  __init__()
+  get_active_statuses() -> list[str]
+  get_statuses() -> dict[str, bool]
+  is_status_active(status: str) -> bool
+  reset_statuses() -> None
+  set_firmware_version(version: str | list[int]) -> None
+  update_statuses(status_dict: dict[str, int]) -> None
+}
+class "SMBus" as smbus2.smbus2.SMBus {
+  _force_last : bool, NoneType
+  _pec : int
+  address : NoneType
+  fd : NoneType
+  force : bool
+  funcs : int, I2cFunc
+  pec
+  __enter__()
+  __exit__(exc_type, exc_val, exc_tb)
+  __init__(bus, force)
+  _get_funcs()
+  _get_pec()
+  _set_address(address, force)
+  block_process_call(i2c_addr, register, data, force)
+  close()
+  enable_pec(enable)
+  i2c_rdwr()
+  open(bus)
+  process_call(i2c_addr, register, value, force)
+  read_block_data(i2c_addr, register, force)
+  read_byte(i2c_addr, force)
+  read_byte_data(i2c_addr, register, force)
+  read_i2c_block_data(i2c_addr, register, length, force)
+  read_word_data(i2c_addr, register, force)
+  write_block_data(i2c_addr, register, data, force)
+  write_byte(i2c_addr, value, force)
+  write_byte_data(i2c_addr, register, value, force)
+  write_i2c_block_data(i2c_addr, register, data, force)
+  write_quick(i2c_addr, force)
+  write_word_data(i2c_addr, register, value, force)
+}
+class "Semaphore" as threading.Semaphore {
+  __enter__
+  _cond : Condition
+  _value : int
+  __exit__(t, v, tb)
+  __init__(value)
+  __repr__()
+  acquire(blocking, timeout)
+  release(n)
+}
+class "SerialHandler" as api.hardware.serial_handler.SerialHandler {
+  MAX_READ_ATTEMPTS : int
+  READ_RETRY_DELAY : float
+  VALID_BAUDRATES : list
+  __baudrate : int
+  __connected : bool
+  __max_consecutive_failures : int
+  __port_name : str
+  __reconnect_attempts : int
+  __reconnect_delay : float
+  __timeout : float
+  __unsuccessful_attempts : int
+  _protocol_helper
+  baudrate
+  connected
+  connected : bool
+  exceeded_failure_threshold
+  port : Optional[serial.Serial | None], NoneType
+  port_name
+  timeout
+  unsuccessful_attempts
+  __init__(baudrate: int, timeout: float, port_name: str, protocol_helper: RoboclawProtocolHelper)
+  _read_byte(ignore_crc) -> int | None
+  _send_byte(byte_to_send: bytes | str | int) -> None
+  close() -> None
+  ensure_connection() -> bool
+  flush() -> None
+  flush_input() -> None
+  flush_output() -> None
+  get_crc_bytes()
+  open() -> bool
+  read_bytes(num_bytes: int, ignore_crc: bool) -> list
+  reconnect() -> bool
+  reset_unsuccessful_attempts() -> None
+  send_break(break_duration: float) -> None
+  send_command(command_bytes: list[int], get_ack: bool, ack_attempts: int, num_read_bytes: int) -> tuple[bool, list[int]]
+}
+class "SerialHandlerIdentifier" as api.schemas.manifest.SerialHandlerIdentifier {
+  identifier : Literal['none', 'roboclaw']
+}
+class "Session" as api.schemas.v1.heartbeat_schemas.Session {
+  session_details
+  session_id : str
+}
+class "SessionDetails" as api.schemas.v1.heartbeat_schemas.SessionDetails {
+  color : str
+  last_heartbeat : float
+  username : str
+}
+class "SetEncoderCountRequest" as api.schemas.v1.motor_reel_schemas.SetEncoderCountRequest {
+  cable_position : float
+}
+class "SetEncoderCountResponse" as api.schemas.v1.motor_reel_schemas.SetEncoderCountResponse {
+}
+class "StartCalibrationResponse" as api.schemas.v1.motor_reel_schemas.StartCalibrationResponse {
+}
+class "StopReelMotorRequest" as api.schemas.v1.motor_reel_schemas.StopReelMotorRequest {
+}
+class "T" as .T {
+}
+class "T" as .T {
+}
+class "T" as .T {
+}
+class "Thread" as threading.Thread {
+  _args : tuple
+  _daemonic : bool
+  _ident : NoneType
+  _initialized : bool
+  _initialized : bool
+  _invoke_excepthook
+  _is_stopped : bool
+  _kwargs : dict, NoneType
+  _name : str, NoneType
+  _native_id : NoneType
+  _started
+  _stderr : TextIOWrapper
+  _target : NoneType
+  _tstate_lock : NoneType
+  daemon
+  daemon : bool
+  ident
+  name
+  name
+  native_id
+  __init__(group, target, name, args, kwargs)
+  __repr__()
+  _bootstrap()
+  _bootstrap_inner()
+  _delete()
+  _reset_internal_locks(is_alive)
+  _set_ident()
+  _set_native_id()
+  _set_tstate_lock()
+  _stop()
+  _wait_for_tstate_lock(block, timeout)
+  getName()
+  isDaemon()
+  is_alive()
+  join(timeout)
+  run()
+  setDaemon(daemonic)
+  setName(name)
+  start()
+}
+class "Timer" as threading.Timer {
+  args : NoneType, list
+  finished
+  function
+  interval
+  kwargs : NoneType, dict
+  __init__(interval, function, args, kwargs)
+  cancel()
+  run()
+}
+class "UpdateReelSettingsRequest" as api.schemas.v1.motor_reel_schemas.UpdateReelSettingsRequest {
+  max_cable_length_meters : float | None
+  reel_safeguards_enabled : Optional[bool | None]
+  zero_point_gutter : float | None
+}
+class "UpdateReelSettingsResponse" as api.schemas.v1.motor_reel_schemas.UpdateReelSettingsResponse {
+}
+class "UpdateReelSettingsResult" as api.schemas.v1.motor_reel_schemas.UpdateReelSettingsResult {
+  settings
+}
+class "User" as api.models.user.User {
+  __tablename__ : str
+  hashed_password
+  id
+  username
+}
+class "UserLogin" as api.schemas.v1.user.UserLogin {
+  password : str
+  username : str
+  validate_password(value)
+  validate_username(value)
+}
+class "UserLoginResponse" as api.schemas.v1.user.UserLoginResponse {
+  access_token : str
+  token_type : str
+}
+class "UserRegister" as api.schemas.v1.user.UserRegister {
+  password : str
+  username : str
+  validate_password(value)
+  validate_username(value)
+}
+class "UserRegisterResponse" as api.schemas.v1.user.UserRegisterResponse {
+  model_config
+  username : str
+}
+class "YAMLConfigHandler" as api.config.yaml_config_handler.YAMLConfigHandler {
+  copy_default_configs()
+  deep_merge(default: Dict[str, Any], persistence: Dict[str, Any]) -> Dict[str, Any]
+  load_cable_reel_save_data() -> CableReelSaveData
+  load_user_config() -> Dict[str, Any]
+  load_yaml(file_path: Path) -> Dict[str, Any]
+  save_cable_reel_save_data(data: Union[CableReelSaveData, Dict[str, Any]]) -> None
+  save_manifest(data: Dict[str, Any]) -> None
+  save_user_config(data: Dict[str, Any]) -> None
+  save_yaml(file_path: Path, data: Dict[str, Any]) -> None
+  set_file_permissions(file_path: Path) -> None
+  setup_all_files() -> None
+  setup_file(default_path: Path, persistence_path: Path) -> None
+}
+class "ZeroCablePositionResponse" as api.schemas.v1.motor_reel_schemas.ZeroCablePositionResponse {
+}
+class "deque" as collections.deque {
+  iterable : list
+  maxlen : int
+  {abstract}__add__(other)
+  __bool__()
+  __class_getitem__(item)
+  __contains__(o)
+  __copy__()
+  {abstract}__delitem__(index)
+  __getitem__(index)
+  {abstract}__iadd__(other)
+  {abstract}__imul__(other)
+  __init__(iterable, maxlen)
+  __iter__()
+  __len__()
+  {abstract}__mul__(other)
+  __nonzero__()
+  __reversed__()
+  {abstract}__rmul__(other)
+  {abstract}__setitem__(index, value)
+  {abstract}append(x)
+  {abstract}appendleft(x)
+  {abstract}clear()
+  copy()
+  count(x)
+  {abstract}extend(iterable)
+  {abstract}extendleft(iterable)
+  index(x, start, end)
+  {abstract}insert(i, x)
+  pop()
+  popleft()
+  {abstract}remove(value)
+  reverse()
+  rotate(n)
+}
+class "lock" as threading.lock {
+  __enter__()
+  {abstract}__exit__()
+  acquire(blocking, timeout)
+  locked()
+  {abstract}release()
+}
+api.constants.enums.LoopControlMode --|> enum.Enum
+api.constants.enums.MotorNumber --|> enum.Enum
+api.constants.enums.ReelAction --|> enum.Enum
+api.constants.enums.ReelDirection --|> enum.Enum
+api.constants.enums.RgbLedControlMode --|> enum.Enum
+api.externals.pololu.motoron.MotoronI2C --|> api.externals.pololu.motoron.MotoronBase
+api.hardware.drivers.motoron.motoron_motor_driver.MotoronMotorDriver --|> api.interfaces.i_motor_driver.IMotorDriver
+api.hardware.drivers.roboclaw.roboclaw_motor_driver.RoboclawMotorDriver --|> api.interfaces.i_motor_driver.IMotorDriver
+api.hardware.encoders.null_encoder_handler.NullEncoderHandler --|> api.interfaces.i_encoder_handler.IEncoderHandler
+api.hardware.encoders.qsb_encoder_handler.QSBEncoderHandler --|> api.interfaces.i_encoder_handler.IEncoderHandler
+api.hardware.encoders.roboclaw_encoder.RoboclawEncoderHandler --|> api.interfaces.i_encoder_handler.IEncoderHandler
+api.hardware.gpio.control_box_gpio_handler.ControlBoxGPIOHandler --|> api.interfaces.i_gpio_handler.IGPIOHandler
+api.hardware.gpio.control_pendant_gpio_handler.PendantControlGPIOHandler --|> api.interfaces.i_gpio_handler.IGPIOHandler
+api.hardware.gpio.null_gpio_handler.NullControlGPIOHandler --|> api.interfaces.i_gpio_handler.IGPIOHandler
+api.interfaces.i_gpio_handler.IGPIOHandler --|> typing.Generic
+api.models.user.User --|> api.models.mixins.BasicMetrics
+api.schemas.configs.CableReelManagerConfig --|> api.schemas.v1.shared_schemas.LoopControlModeBase
+api.schemas.health.DetailedHealthCheckResponse --|> api.schemas.health.HealthCheckResponse
+api.schemas.v1.heartbeat_schemas.GenericHeartbeatResponse --|> typing.Generic
+api.schemas.v1.heartbeat_schemas.HeartbeatResponse --|> api.schemas.v1.heartbeat_schemas.GenericHeartbeatResponse
+api.schemas.v1.heartbeat_schemas.HeartbeatResult --|> api.schemas.v1.heartbeat_schemas.BaseResult
+api.schemas.v1.heartbeat_schemas.ReelState --|> api.schemas.v1.shared_schemas.LoopControlModeBase
+api.schemas.v1.motor_reel_schemas.AddCableOffsetResponse --|> api.schemas.v1.motor_reel_schemas.BaseResponse
+api.schemas.v1.motor_reel_schemas.AddCableOffsetResult --|> api.schemas.v1.heartbeat_schemas.BaseResult
+api.schemas.v1.motor_reel_schemas.BaseResponse --|> typing.Generic
+api.schemas.v1.motor_reel_schemas.CableReelInfoResponse --|> api.schemas.v1.motor_reel_schemas.BaseResponse
+api.schemas.v1.motor_reel_schemas.CalibrationResult --|> api.schemas.v1.heartbeat_schemas.BaseResult
+api.schemas.v1.motor_reel_schemas.CancelCalibrationResponse --|> api.schemas.v1.motor_reel_schemas.BaseResponse
+api.schemas.v1.motor_reel_schemas.EmergencyStopActivateResponse --|> api.schemas.v1.motor_reel_schemas.BaseResponse
+api.schemas.v1.motor_reel_schemas.EmergencyStopDeactivateResponse --|> api.schemas.v1.motor_reel_schemas.BaseResponse
+api.schemas.v1.motor_reel_schemas.FinishCalibrationResponse --|> api.schemas.v1.motor_reel_schemas.BaseResponse
+api.schemas.v1.motor_reel_schemas.FinishCalibrationResult --|> api.schemas.v1.motor_reel_schemas.CalibrationResult
+api.schemas.v1.motor_reel_schemas.GetCablePositionResponse --|> api.schemas.v1.motor_reel_schemas.BaseResponse
+api.schemas.v1.motor_reel_schemas.GoToResponse --|> api.schemas.v1.motor_reel_schemas.BaseResponse
+api.schemas.v1.motor_reel_schemas.GoToResult --|> api.schemas.v1.heartbeat_schemas.BaseResult
+api.schemas.v1.motor_reel_schemas.LoopControlModeRequest --|> api.schemas.v1.shared_schemas.LoopControlModeBase
+api.schemas.v1.motor_reel_schemas.LoopControlModeResponse --|> api.schemas.v1.motor_reel_schemas.BaseResponse
+api.schemas.v1.motor_reel_schemas.LoopControlModeResult --|> api.schemas.v1.heartbeat_schemas.BaseResult
+api.schemas.v1.motor_reel_schemas.ReelMotorControlResponse --|> api.schemas.v1.motor_reel_schemas.BaseResponse
+api.schemas.v1.motor_reel_schemas.ReelMotorControlResult --|> api.schemas.v1.heartbeat_schemas.BaseResult
+api.schemas.v1.motor_reel_schemas.ReelSettingsResponse --|> api.schemas.v1.motor_reel_schemas.BaseResponse
+api.schemas.v1.motor_reel_schemas.ReelSettingsResult --|> api.schemas.v1.heartbeat_schemas.BaseResult
+api.schemas.v1.motor_reel_schemas.SetEncoderCountResponse --|> api.schemas.v1.motor_reel_schemas.BaseResponse
+api.schemas.v1.motor_reel_schemas.StartCalibrationResponse --|> api.schemas.v1.motor_reel_schemas.BaseResponse
+api.schemas.v1.motor_reel_schemas.UpdateReelSettingsResponse --|> api.schemas.v1.motor_reel_schemas.BaseResponse
+api.schemas.v1.motor_reel_schemas.UpdateReelSettingsResult --|> api.schemas.v1.heartbeat_schemas.BaseResult
+api.schemas.v1.motor_reel_schemas.ZeroCablePositionResponse --|> api.schemas.v1.motor_reel_schemas.BaseResponse
+api.services.reel_monitor_thread.ReelMonitorThread --|> threading.Thread
+pathlib.Path --|> pathlib.PurePath
+queue.PriorityQueue --|> queue.Queue
+threading.Timer --|> threading.Thread
+.T --* api.schemas.v1.heartbeat_schemas.GenericHeartbeatResponse : result
+.T --* api.schemas.v1.motor_reel_schemas.BaseResponse : result
+api.constants.enums.LoopControlMode --* api.schemas.v1.motor_reel_schemas.ReelSettings : loop_control_mode
+api.constants.enums.LoopControlMode --* api.schemas.v1.shared_schemas.LoopControlModeBase : loop_control_mode
+api.constants.enums.LoopControlMode --* api.services.reel_controller.ReelController : __loop_control_mode
+api.constants.enums.MotorNumber --* api.schemas.motor_driver_response.MotorDriverResponse : motor_number
+api.constants.enums.ReelDirection --* api.schemas.motor_driver_response.MotorDriverResponse : direction
+api.constants.enums.ReelDirection --* api.services.reel_controller.ReelController : m1_curr_direction
+api.constants.enums.ReelDirection --* api.services.reel_controller.ReelController : m2_curr_direction
+api.constants.enums.RgbLedControlMode --* api.hardware.gpio.control_pendant_gpio_handler.PendantControlGPIOHandler : __current_mode
+api.events.event.Event --* api.services.reel_controller.ReelController : cable_position_update_event
+api.externals.pololu.motoron.MotoronI2C --* api.hardware.drivers.motoron.motoron_motor_driver.MotoronMotorDriver : __mc
+api.externals.pololu.motoron.MotoronI2C --* api.hardware.drivers.motoron.motoron_motor_driver.MotoronMotorDriver : __mc
+api.hardware.drivers.motoron.motoron_command_handler.MotoronCommandHandler --* api.hardware.drivers.motoron.motoron_motor_driver.MotoronMotorDriver : __command_handler
+api.hardware.drivers.motoron.motoron_command_handler.MotoronCommandHandler --* api.hardware.drivers.motoron.motoron_motor_driver.MotoronMotorDriver : __command_handler
+api.hardware.drivers.motoron.motoron_motor_driver.MotoronMotorDriver --* api.services.reel_manager.ReelManager : __motor_driver
+api.hardware.drivers.motoron.motoron_state.MotoronState --* api.hardware.drivers.motoron.motoron_state_handler.MotoronStateHandler : __state
+api.hardware.drivers.motoron.motoron_state_handler.MotoronStateHandler --* api.hardware.drivers.motoron.motoron_motor_driver.MotoronMotorDriver : __state_handler
+api.hardware.drivers.motoron.motoron_state_handler.MotoronStateHandler --* api.hardware.drivers.motoron.motoron_motor_driver.MotoronMotorDriver : __state_handler
+api.hardware.drivers.roboclaw.roboclaw_motor_driver.RoboclawMotorDriver --* api.services.reel_manager.ReelManager : __motor_driver
+api.hardware.drivers.roboclaw.roboclaw_pid_handler.RoboclawPIDHandler --* api.hardware.drivers.roboclaw.roboclaw_motor_driver.RoboclawMotorDriver : __pid_handler
+api.hardware.drivers.roboclaw.roboclaw_protocol_helper.RoboclawProtocolHelper --* api.hardware.drivers.roboclaw.roboclaw_motor_driver.RoboclawMotorDriver : __protocol_helper
+api.hardware.drivers.roboclaw.roboclaw_state_handler.RoboclawStateHandler --* api.hardware.drivers.roboclaw.roboclaw_motor_driver.RoboclawMotorDriver : state
+api.hardware.encoders.encoder_controller.EncoderController --* api.services.reel_manager.ReelManager : __encoder_controller
+api.hardware.gpio.control_box_gpio_handler.ControlBoxGPIOHandler --* api.services.reel_manager.ReelManager : __gpio_handler
+api.hardware.gpio.control_pendant_gpio_handler.PendantControlGPIOHandler --* api.services.reel_manager.ReelManager : __gpio_handler
+api.hardware.gpio.null_gpio_handler.NullControlGPIOHandler --* api.services.reel_manager.ReelManager : __gpio_handler
+api.schemas.configs.CableReelManagerConfig --* api.main.app_settings.HardwareConfig : cable_reel_config
+api.schemas.configs.ControlBoxGPIOConfig --* api.schemas.configs.GPIOConfig : control_box
+api.schemas.configs.PendantControlGPIOConfig --* api.schemas.configs.GPIOConfig : pendant_control
+api.schemas.health.DiskSpace --* api.schemas.health.HealthCheckResponse : disk_space
+api.schemas.manifest.CableReelChassisIdentifier --* api.schemas.manifest.ManifestSettings : cable_reel_chassis_type
+api.schemas.manifest.EncoderIdentifier --* api.schemas.manifest.ManifestSettings : encoder_type
+api.schemas.manifest.GPIOControlIdentifier --* api.schemas.manifest.ManifestSettings : gpio_control_type
+api.schemas.manifest.ManifestSettings --* api.main.app_settings.HardwareConfig : manifest
+api.schemas.manifest.MotorDriverIdentifier --* api.schemas.manifest.ManifestSettings : motor_driver_type
+api.schemas.manifest.SerialHandlerIdentifier --* api.schemas.manifest.ManifestSettings : serial_handler_type
+api.schemas.v1.heartbeat_schemas.ReelState --* api.schemas.v1.heartbeat_schemas.GenericHeartbeatResponse : state
+api.schemas.v1.heartbeat_schemas.ReelStatus --* api.schemas.v1.heartbeat_schemas.GenericHeartbeatResponse : status
+api.schemas.v1.heartbeat_schemas.Session --* api.schemas.v1.heartbeat_schemas.GenericHeartbeatResponse : session
+api.schemas.v1.heartbeat_schemas.SessionDetails --* api.schemas.v1.heartbeat_schemas.Session : session_details
+api.schemas.v1.motor_reel_schemas.CableReelInfo --* api.schemas.v1.motor_reel_schemas.CableReelInfoResult : info
+api.schemas.v1.motor_reel_schemas.ReelSettings --* api.schemas.v1.motor_reel_schemas.ReelSettingsResult : settings
+api.schemas.v1.motor_reel_schemas.ReelSettings --* api.schemas.v1.motor_reel_schemas.UpdateReelSettingsResult : settings
+api.services.reel_controller.ReelController --* api.services.reel_manager.ReelManager : __reel_controller
+api.services.reel_manager.ReelManager --* api.services.reel_manager_wrapper.ReelManagerWrapper : reel_manager
+api.services.reel_monitor_thread.ReelMonitorThread --* api.services.reel_manager.ReelManager : __monitor_motor_thread
+api.services.reel_monitor_thread.ReelMonitorThread --* api.services.reel_manager.ReelManager : __monitor_motor_thread
+collections.deque --* api.hardware.gpio.control_pendant_gpio_handler.PendantControlGPIOHandler : __value_buffer
+collections.deque --* queue.Queue : queue
+pathlib.Path --* api.constants.constants.ProjectPaths : BASE_DIR
+queue.PriorityQueue --* api.hardware.drivers.motoron.motoron_command_handler.MotoronCommandHandler : command_queue
+queue.PriorityQueue --* api.hardware.drivers.roboclaw.command_handler.CommandHandler : command_queue
+smbus2.smbus2.SMBus --* api.hardware.gpio.control_pendant_gpio_handler.PendantControlGPIOHandler : __bus
+threading.Event --* api.hardware.drivers.motoron.motoron_command_handler.MotoronCommand : execution_completed
+threading.Event --* api.hardware.drivers.roboclaw.command_handler.Command : execution_completed
+threading.Event --* api.hardware.gpio.control_pendant_gpio_handler.PendantControlGPIOHandler : __stop_polling
+threading.Event --* api.hardware.gpio.control_pendant_gpio_handler.PendantControlGPIOHandler : __stop_led_thread
+threading.Event --* api.services.reel_monitor_thread.ReelMonitorThread : __terminate_monitor
+threading.Event --* threading.Thread : _started
+threading.Event --* threading.Timer : finished
+threading.Semaphore --* api.hardware.drivers.roboclaw.roboclaw_motor_driver.RoboclawMotorDriver : __send_semaphore
+threading.Semaphore --* api.services.reel_controller.ReelController : __jog_semaphore
+threading.Thread --* api.hardware.gpio.control_pendant_gpio_handler.PendantControlGPIOHandler : __polling_thread
+threading.Thread --* api.hardware.gpio.control_pendant_gpio_handler.PendantControlGPIOHandler : __led_thread
+threading.Thread --* api.services.reel_manager.ReelManager : __health_check_thread
+threading.Timer --* api.hardware.gpio.control_pendant_gpio_handler.PendantControlGPIOHandler : __safety_timer
+threading.Timer --* api.hardware.gpio.control_pendant_gpio_handler.PendantControlGPIOHandler : __safety_timer
+threading.lock --* api.hardware.drivers.motoron.motoron_command_handler.MotoronCommandHandler : queue_lock
+threading.lock --* api.hardware.drivers.roboclaw.command_handler.CommandHandler : queue_lock
+threading.lock --* queue.Queue : mutex
+.T --o api.interfaces.i_gpio_handler.IGPIOHandler : _config
+api.constants.enums.LoopControlMode --o api.services.reel_controller.ReelController : __loop_control_mode
+api.constants.enums.LoopControlMode --o api.services.reel_controller.ReelController : loop_control_mode
+api.externals.pololu.motoron.MotoronI2C --o api.hardware.drivers.motoron.motoron_command_handler.MotoronCommandHandler : motoron
+api.externals.pololu.motoron.MotoronI2C --o api.hardware.drivers.motoron.motoron_state_handler.MotoronStateHandler : __mc
+api.hardware.drivers.motoron.motoron_command_handler.MotoronCommandHandler --o api.hardware.drivers.motoron.motoron_state_handler.MotoronStateHandler : __command_handler
+api.hardware.drivers.roboclaw.command_handler.CommandHandler --o api.hardware.drivers.roboclaw.roboclaw_motor_driver.RoboclawMotorDriver : __command_handler
+api.hardware.drivers.roboclaw.command_handler.CommandHandler --o api.hardware.encoders.roboclaw_encoder.RoboclawEncoderHandler : __command_handler
+api.hardware.drivers.roboclaw.roboclaw_motor_driver.RoboclawMotorDriver --o api.services.reel_monitor_thread.ReelMonitorThread : __motor_controller
+api.hardware.drivers.roboclaw.roboclaw_protocol_helper.RoboclawProtocolHelper --o api.hardware.serial_handler.SerialHandler : _protocol_helper
+api.hardware.encoders.encoder_controller.EncoderController --o api.services.reel_controller.ReelController : __encoder_controller
+api.interfaces.i_encoder_handler.IEncoderHandler --o api.hardware.encoders.encoder_controller.EncoderController : encoder_handler
+api.interfaces.i_motor_driver.IMotorDriver --o api.services.reel_controller.ReelController : __motor_driver
+api.schemas.configs.CableReelManagerConfig --o api.services.reel_manager.ReelManager : __manager_config
+api.schemas.configs.MotoronMotorDriverConfig --o api.hardware.drivers.motoron.motoron_motor_driver.MotoronMotorDriver : __config
+api.schemas.configs.PendantControlGPIOConfig --o api.hardware.gpio.control_pendant_gpio_handler.PendantControlGPIOHandler : _config
+api.schemas.configs.QSBEncoderConfig --o api.hardware.encoders.qsb_encoder_handler.QSBEncoderHandler : __config
+api.services.reel_controller.ReelController --o api.services.reel_monitor_thread.ReelMonitorThread : __reel_controller
+queue.PriorityQueue --o api.hardware.drivers.motoron.motoron_command_handler.MotoronCommandHandler : command_queue
+queue.PriorityQueue --o api.hardware.drivers.roboclaw.command_handler.CommandHandler : command_queue
+smbus2.smbus2.SMBus --o api.externals.pololu.motoron.MotoronI2C : bus
+typing.Any --o api.hardware.drivers.motoron.motoron_command_handler.MotoronCommand : result
+@enduml
