@@ -64,13 +64,13 @@ jobs:
 
           # Update versions list
           if [ ! -f "docs/versions.json" ]; then
-            echo '["latest"]' > docs/versions.json
+            echo '[]' > docs/versions.json
           fi
 
           # Version management
           python3 << 'EOF'
           import json
-          import sys
+          import re
 
           version = "${{ github.event.client_payload.version }}"
 
@@ -83,17 +83,15 @@ jobs:
           if version not in versions:
               versions.append(version)
               
-          # Sort versions (latest first, then by version number)
-          def sort_key(v):
-              if v == "latest":
-                  return (0,)
-              parts = v.split('.')
-              try:
-                  return (1, -int(parts[0]), -int(parts[1]), -int(parts[2]))
-              except:
-                  return (2, v)
+          # Sort versions by semantic version (newest first)
+          def version_key(v):
+              match = re.match(r'^(\d+)(?:\.(\d+))?(?:\.(\d+))?', v)
+              if match:
+                  parts = match.groups()
+                  return tuple(int(p) if p else 0 for p in parts)
+              return (0, 0, 0, v)
 
-          versions.sort(key=sort_key)
+          versions.sort(key=version_key, reverse=True)
 
           with open('docs/versions.json', 'w') as f:
               json.dump(versions, f, indent=2)
