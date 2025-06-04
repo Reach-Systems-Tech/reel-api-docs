@@ -249,7 +249,6 @@ jobs:
           All documentation files now have dynamic version switching capability."
             
             git push origin main
-            echo ""
             echo "Documentation committed and pushed to main branch"
             echo "GitHub Pages will automatically deploy from /docs folder"
             echo ""
