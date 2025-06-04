@@ -184,8 +184,19 @@ jobs:
         run: |
           VERSION="${{ github.event.client_payload.version }}"
 
-          # Create or update versions.json
-          if [ ! -f "docs/versions.json" ]; then
+          echo "=== UPDATING VERSIONS.JSON ==="
+          echo "New version to add: $VERSION"
+
+          # Make sure we're on main branch and have latest versions.json
+          git checkout main
+          git pull origin main || echo "Nothing to pull"
+
+          # Debug: Show current versions.json if it exists
+          if [ -f "docs/versions.json" ]; then
+            echo "Current versions.json content:"
+            cat docs/versions.json
+          else
+            echo "No existing versions.json found - creating new one"
             echo '[]' > docs/versions.json
           fi
 
@@ -193,17 +204,30 @@ jobs:
           python3 << 'EOF'
           import json
           import re
+          import os
 
           version = "${{ github.event.client_payload.version }}"
+          print(f"Adding version: {version}")
 
+          # Read existing versions from the repo (not from archive)
           try:
-              with open('docs/versions.json', 'r') as f:
-                  versions = json.load(f)
-          except:
+              if os.path.exists('docs/versions.json'):
+                  with open('docs/versions.json', 'r') as f:
+                      versions = json.load(f)
+                      print(f"Loaded existing versions: {versions}")
+              else:
+                  versions = []
+                  print("No existing versions found")
+          except Exception as e:
+              print(f"Error reading versions.json: {e}")
               versions = []
 
+          # Add new version if not already present
           if version not in versions:
               versions.append(version)
+              print(f"Added new version. Updated list: {versions}")
+          else:
+              print(f"Version {version} already exists in list")
               
           # Sort versions by semantic version (newest first)
           def version_key(v):
@@ -214,7 +238,9 @@ jobs:
               return (0, 0, 0, v)
 
           versions.sort(key=version_key, reverse=True)
+          print(f"Final sorted versions: {versions}")
 
+          # Save updated versions
           with open('docs/versions.json', 'w') as f:
               json.dump(versions, f, indent=2)
 
@@ -224,7 +250,12 @@ jobs:
           if versions:
               with open('latest_version.txt', 'w') as f:
                   f.write(versions[0])
+              print(f"Latest version set to: {versions[0]}")
           EOF
+
+          echo ""
+          echo "=== FINAL VERSIONS.JSON CONTENT ==="
+          cat docs/versions.json
 
       - name: Run documentation updater (ONLY for dropdowns)
         run: |
