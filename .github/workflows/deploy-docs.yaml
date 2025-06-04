@@ -38,25 +38,52 @@ jobs:
           echo "Archive contents preview:"
           tar -tzf docs.tar.gz | head -15
 
-          # FIXED: Create version directory and extract with proper structure
-          mkdir -p "docs/$VERSION"
+          # FIXED: Extract to temp directory first to see structure
+          mkdir temp_extract
+          tar -xzf docs.tar.gz -C temp_extract
 
-          # Extract archive contents - the archive contains the docs structure already
-          # So we extract directly into the version directory
-          tar -xzf docs.tar.gz -C "docs/$VERSION" --strip-components=0
+          echo "Extracted archive structure:"
+          find temp_extract -type f | head -15
 
-          # Debug: Show what was extracted
-          echo "Extracted structure:"
+          # CRITICAL: Handle the nested structure correctly
+          if [ -d "temp_extract/docs/api/auto_docs" ]; then
+            echo "Found nested docs/api/auto_docs structure - extracting correctly..."
+            
+            # Create version directory
+            mkdir -p "docs/$VERSION"
+            
+            # Move version-specific files from nested structure
+            if [ -d "temp_extract/docs/api/auto_docs/$VERSION" ]; then
+              echo "Moving version-specific files from temp_extract/docs/api/auto_docs/$VERSION/ to docs/$VERSION/"
+              cp -r temp_extract/docs/api/auto_docs/$VERSION/* "docs/$VERSION/"
+            elif [ -f "temp_extract/docs/api/auto_docs/index.html" ]; then
+              # Fallback: if version directory doesn't exist, but files do
+              echo "Version directory not found, copying available files..."
+              cp -r temp_extract/docs/api/auto_docs/* "docs/$VERSION/"
+            else
+              echo "❌ ERROR: No recognizable file structure in archive!"
+              find temp_extract -type f
+              exit 1
+            fi
+            
+            # Copy global files (versions.json, etc.) to root docs
+            if [ -f "temp_extract/docs/api/auto_docs/versions.json" ]; then
+              cp temp_extract/docs/api/auto_docs/versions.json docs/
+              echo "Copied global versions.json"
+            fi
+            
+          else
+            echo "Archive has flat structure - extracting directly..."
+            mkdir -p "docs/$VERSION"
+            cp -r temp_extract/* "docs/$VERSION/"
+          fi
+
+          # Clean up temp directory
+          rm -rf temp_extract
+
+          echo "Final extracted structure:"
           find "docs/$VERSION" -type f | head -15
           echo "Total files extracted: $(find "docs/$VERSION" -type f | wc -l)"
-
-          # CRITICAL: Move files to correct locations if they're nested
-          if [ -d "docs/$VERSION/docs" ]; then
-            echo "FIXING: Found nested docs structure, moving files up..."
-            mv "docs/$VERSION/docs"/* "docs/$VERSION/"
-            rmdir "docs/$VERSION/docs"
-            echo "Fixed nested structure"
-          fi
 
           # Verify key files exist in correct locations
           if [ -f "docs/$VERSION/index.html" ]; then
@@ -68,6 +95,13 @@ jobs:
               echo "❌ ERROR: Version index.html does not contain Redoc template"
               echo "First 200 chars of version index.html:"
               head -c 200 "docs/$VERSION/index.html"
+              
+              # Additional debugging
+              echo ""
+              echo "File details:"
+              ls -la "docs/$VERSION/index.html"
+              echo "Does it contain 'Auto-redirecting'?"
+              grep -q "Auto-redirecting" "docs/$VERSION/index.html" && echo "YES - This is the WRONG template!" || echo "NO"
             fi
           else
             echo "❌ ERROR: Version-specific index.html missing at docs/$VERSION/index.html"
@@ -271,11 +305,12 @@ jobs:
             echo "❌ Root versions.json missing!"
           fi
 
-          # Check that each version has correct templates
+          # Check that each version has correct templates - FIXED REGEX
           for version_dir in docs/*/; do
             if [ -d "$version_dir" ]; then
               version=$(basename "$version_dir")
-              if [[ "$version" =~ ^[0-9]+(\.[0-9]+)*$ ]] || [[ "$version" =~ ^test ]]; then
+              # Use grep instead of regex for better compatibility
+              if echo "$version" | grep -E '^[0-9]+(\.[0-9]+)*$' >/dev/null || echo "$version" | grep '^test' >/dev/null; then
                 echo "Checking version: $version"
                 if [ -f "$version_dir/index.html" ]; then
                   if grep -q "redoc-container" "$version_dir/index.html" && ! grep -q "Auto-redirecting" "$version_dir/index.html"; then
