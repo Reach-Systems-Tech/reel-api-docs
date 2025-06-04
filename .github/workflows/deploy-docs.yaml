@@ -24,7 +24,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.10'
+          python-version: "3.10"
 
       - name: Download and extract documentation
         run: |
@@ -40,7 +40,7 @@ jobs:
 
           # FIXED: Create version directory and extract with proper structure
           mkdir -p "docs/$VERSION"
-          
+
           # Extract archive contents - the archive contains the docs structure already
           # So we extract directly into the version directory
           tar -xzf docs.tar.gz -C "docs/$VERSION" --strip-components=0
@@ -86,7 +86,7 @@ jobs:
       - name: Update versions.json with semantic sorting
         run: |
           VERSION="${{ github.event.client_payload.version }}"
-          
+
           # Create or update versions.json
           if [ ! -f "docs/versions.json" ]; then
             echo '[]' > docs/versions.json
@@ -122,7 +122,7 @@ jobs:
               json.dump(versions, f, indent=2)
 
           print(f"Updated versions.json with: {versions}")
-          
+
           # Store latest version for later use
           if versions:
               with open('latest_version.txt', 'w') as f:
@@ -132,7 +132,7 @@ jobs:
       - name: Run documentation updater (ONLY for dropdowns)
         run: |
           VERSION="${{ github.event.client_payload.version }}"
-          
+
           # Check if we have the tool available
           if [ -f "docs/$VERSION/_tools/doc_updater.py" ]; then
             echo "Running documentation updater to update ONLY version dropdowns..."
@@ -172,19 +172,16 @@ jobs:
       - name: Create root index.html ONLY if missing (and only create landing page)
         run: |
           # ONLY create root index.html if it doesn't exist
-          # This should NEVER overwrite version-specific files
           if [ ! -f "docs/index.html" ]; then
             LATEST_VERSION=$(cat latest_version.txt 2>/dev/null || echo "unknown")
             
             echo "Creating root landing page index.html..."
             echo "Latest version: $LATEST_VERSION"
             
-            # Extract API title from a version-specific file (but don't modify it!)
+            # Extract API title from a version-specific file
             API_TITLE="API Documentation"
             if [ -f "docs/$LATEST_VERSION/index.html" ]; then
-              # Extract title safely without modifying the file
               API_TITLE=$(grep -o '<title>[^<]*</title>' "docs/$LATEST_VERSION/index.html" | sed 's/<title>\(.*\) - .*/\1/' | head -1 || echo "API Documentation")
-              # Clean up any nested title tags in the extracted title
               API_TITLE=$(echo "$API_TITLE" | sed 's/<[^>]*>//g' | sed 's/Documentation.*//' | xargs)
               if [ -z "$API_TITLE" ]; then
                 API_TITLE="API Documentation"
@@ -192,46 +189,47 @@ jobs:
               echo "Extracted API title: '$API_TITLE'"
             fi
             
-            # Create ONLY a root landing page - this should NOT affect version-specific files
-            cat > docs/index.html << EOF
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>$API_TITLE Documentation</title>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Roboto', sans-serif; max-width: 800px; margin: 0 auto; padding: 40px 20px; line-height: 1.6; background: #fafafa; }
-        .container { background: white; padding: 40px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        h1 { color: #ff092e; border-bottom: 2px solid #ff092e; padding-bottom: 10px; margin-top: 0; }
-        .version-list { list-style: none; padding: 0; }
-        .version-list li { margin: 15px 0; }
-        .version-list a { display: inline-block; padding: 12px 24px; background: #f8f9fa; color: #124AFF; text-decoration: none; border-radius: 6px; border: 1px solid #e9ecef; transition: all 0.2s; font-weight: 500; }
-        .version-list a:hover { background: #124AFF; color: white; transform: translateY(-1px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-        .latest { background: #ff092e !important; color: white !important; }
-        .latest:hover { background: #cb2c30 !important; }
-        .auto-redirect { background: #fff3cd; border: 1px solid #ffeaa7; padding: 20px; border-radius: 6px; margin: 25px 0; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>$API_TITLE Documentation</h1>
-        <div class="auto-redirect">
-            <p><strong>Auto-redirecting to latest version ($LATEST_VERSION) in 3 seconds...</strong></p>
-            <p><a href="$LATEST_VERSION/">Click here to go immediately</a></p>
-        </div>
-        <h2>Available Versions</h2>
-        <ul class="version-list">
-            <li><a href="$LATEST_VERSION/" class="latest">$LATEST_VERSION (latest)</a></li>
-        </ul>
-    </div>
-    <script>
-        setTimeout(() => { window.location.href = '$LATEST_VERSION/'; }, 3000);
-    </script>
-</body>
-</html>
-EOF
+            # Create the HTML file using echo statements (YAML-safe)
+            {
+              echo '<!DOCTYPE html>'
+              echo '<html lang="en">'
+              echo '<head>'
+              echo '    <meta charset="UTF-8">'
+              echo '    <meta name="viewport" content="width=device-width, initial-scale=1.0">'
+              echo "    <title>$API_TITLE Documentation</title>"
+              echo '    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">'
+              echo '    <style>'
+              echo '        body { font-family: '\''Roboto'\'', sans-serif; max-width: 800px; margin: 0 auto; padding: 40px 20px; line-height: 1.6; background: #fafafa; }'
+              echo '        .container { background: white; padding: 40px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }'
+              echo '        h1 { color: #ff092e; border-bottom: 2px solid #ff092e; padding-bottom: 10px; margin-top: 0; }'
+              echo '        .version-list { list-style: none; padding: 0; }'
+              echo '        .version-list li { margin: 15px 0; }'
+              echo '        .version-list a { display: inline-block; padding: 12px 24px; background: #f8f9fa; color: #124AFF; text-decoration: none; border-radius: 6px; border: 1px solid #e9ecef; transition: all 0.2s; font-weight: 500; }'
+              echo '        .version-list a:hover { background: #124AFF; color: white; transform: translateY(-1px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }'
+              echo '        .latest { background: #ff092e !important; color: white !important; }'
+              echo '        .latest:hover { background: #cb2c30 !important; }'
+              echo '        .auto-redirect { background: #fff3cd; border: 1px solid #ffeaa7; padding: 20px; border-radius: 6px; margin: 25px 0; }'
+              echo '    </style>'
+              echo '</head>'
+              echo '<body>'
+              echo '    <div class="container">'
+              echo "        <h1>$API_TITLE Documentation</h1>"
+              echo '        <div class="auto-redirect">'
+              echo "            <p><strong>Auto-redirecting to latest version ($LATEST_VERSION) in 3 seconds...</strong></p>"
+              echo "            <p><a href=\"$LATEST_VERSION/\">Click here to go immediately</a></p>"
+              echo '        </div>'
+              echo '        <h2>Available Versions</h2>'
+              echo '        <ul class="version-list">'
+              echo "            <li><a href=\"$LATEST_VERSION/\" class=\"latest\">$LATEST_VERSION (latest)</a></li>"
+              echo '        </ul>'
+              echo '    </div>'
+              echo '    <script>'
+              echo "        setTimeout(() => { window.location.href = '$LATEST_VERSION/'; }, 3000);"
+              echo '    </script>'
+              echo '</body>'
+              echo '</html>'
+            } > docs/index.html
+            
             echo "✅ Created root index.html with landing page template"
           else
             echo "Root index.html already exists, not overwriting"
@@ -248,14 +246,14 @@ EOF
         run: |
           echo "=== FINAL DOCUMENTATION STRUCTURE ==="
           find docs -name "*.html" -o -name "*.json" | sort
-          
+
           echo ""
           echo "=== versions.json content ==="
           cat docs/versions.json
-          
+
           echo ""
           echo "=== CRITICAL VERIFICATION CHECKS ==="
-          
+
           if [ -f "docs/index.html" ]; then
             echo "✅ Root index.html exists"
             if grep -q "Auto-redirecting" docs/index.html && ! grep -q "redoc-container" docs/index.html; then
@@ -266,13 +264,13 @@ EOF
           else
             echo "❌ Root index.html missing!"
           fi
-          
+
           if [ -f "docs/versions.json" ]; then
             echo "✅ Root versions.json exists"
           else
             echo "❌ Root versions.json missing!"
           fi
-          
+
           # Check that each version has correct templates
           for version_dir in docs/*/; do
             if [ -d "$version_dir" ]; then
@@ -302,10 +300,10 @@ EOF
       - name: Commit and push changes
         run: |
           VERSION="${{ github.event.client_payload.version }}"
-          
+
           git config --local user.email "action@github.com"
           git config --local user.name "Documentation Bot"
-          
+
           # Ensure we're on main branch
           git checkout main
 
@@ -317,7 +315,7 @@ EOF
           - Updated all version dropdowns and navigation
           - Synchronized versions.json across all directories
           - Updated root index.html with latest version list
-          
+
           All documentation files now have dynamic version switching capability."
             
             git push origin main
