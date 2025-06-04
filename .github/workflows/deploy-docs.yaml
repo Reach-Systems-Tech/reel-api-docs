@@ -45,8 +45,32 @@ jobs:
           echo "Extracted archive structure:"
           find temp_extract -type f | head -15
 
-          # CRITICAL: Handle the nested structure correctly
-          if [ -d "temp_extract/docs/api/auto_docs" ]; then
+          # CRITICAL: Handle the flat structure correctly - this is the key fix!
+          if [ -d "temp_extract/$VERSION" ]; then
+            echo "Found version-specific directory in archive: temp_extract/$VERSION"
+            
+            # Create version directory
+            mkdir -p "docs/$VERSION"
+            
+            # Copy ONLY the version-specific files
+            echo "Copying version-specific files from temp_extract/$VERSION/ to docs/$VERSION/"
+            cp -r temp_extract/$VERSION/* "docs/$VERSION/"
+            
+            # Copy global files to root docs (but NOT index.html!)
+            if [ -f "temp_extract/versions.json" ]; then
+              cp temp_extract/versions.json docs/
+              echo "Copied global versions.json"
+            fi
+            
+            # Copy tools if they exist
+            if [ -d "temp_extract/_tools" ]; then
+              cp -r temp_extract/_tools "docs/$VERSION/"
+              echo "Copied _tools directory"
+            fi
+            
+            echo "✅ CORRECT extraction: Version-specific files to docs/$VERSION/"
+            
+          elif [ -d "temp_extract/docs/api/auto_docs" ]; then
             echo "Found nested docs/api/auto_docs structure - extracting correctly..."
             
             # Create version directory
@@ -56,13 +80,9 @@ jobs:
             if [ -d "temp_extract/docs/api/auto_docs/$VERSION" ]; then
               echo "Moving version-specific files from temp_extract/docs/api/auto_docs/$VERSION/ to docs/$VERSION/"
               cp -r temp_extract/docs/api/auto_docs/$VERSION/* "docs/$VERSION/"
-            elif [ -f "temp_extract/docs/api/auto_docs/index.html" ]; then
-              # Fallback: if version directory doesn't exist, but files do
-              echo "Version directory not found, copying available files..."
-              cp -r temp_extract/docs/api/auto_docs/* "docs/$VERSION/"
             else
-              echo "❌ ERROR: No recognizable file structure in archive!"
-              find temp_extract -type f
+              echo "❌ ERROR: Version directory not found in nested structure!"
+              find temp_extract -type d -name "$VERSION"
               exit 1
             fi
             
@@ -73,22 +93,40 @@ jobs:
             fi
             
           else
-            echo "Archive has flat structure - extracting directly..."
-            mkdir -p "docs/$VERSION"
-            cp -r temp_extract/* "docs/$VERSION/"
+            echo "❌ ERROR: Unrecognized archive structure!"
+            echo "Expected either:"
+            echo "  - Flat structure with $VERSION/ directory"
+            echo "  - Nested docs/api/auto_docs/ structure"
+            echo ""
+            echo "Found structure:"
+            find temp_extract -type d
+            exit 1
           fi
 
           # Clean up temp directory
           rm -rf temp_extract
 
+          echo ""
+          echo "=== POST-EXTRACTION VERIFICATION ==="
           echo "Final extracted structure:"
           find "docs/$VERSION" -type f | head -15
           echo "Total files extracted: $(find "docs/$VERSION" -type f | wc -l)"
 
           # Verify key files exist in correct locations
           if [ -f "docs/$VERSION/index.html" ]; then
-            echo "✅ Version-specific index.html found at correct location"
-            # Check what type of template it is
+            echo "✅ Version-specific index.html found at docs/$VERSION/index.html"
+            
+            # Check file size - Redoc templates are ~10k, landing pages are ~3k
+            file_size=$(wc -c < "docs/$VERSION/index.html")
+            echo "File size: $file_size bytes"
+            
+            if [ $file_size -gt 8000 ]; then
+              echo "✅ File size suggests Redoc template (>8k bytes)"
+            else
+              echo "⚠️  File size suggests landing page template (<8k bytes)"
+            fi
+            
+            # Check template type
             if grep -q "redoc-container" "docs/$VERSION/index.html"; then
               echo "✅ CORRECT: Version index.html contains Redoc template"
             else
@@ -101,12 +139,27 @@ jobs:
               echo "File details:"
               ls -la "docs/$VERSION/index.html"
               echo "Does it contain 'Auto-redirecting'?"
-              grep -q "Auto-redirecting" "docs/$VERSION/index.html" && echo "YES - This is the WRONG template!" || echo "NO"
+              if grep -q "Auto-redirecting" "docs/$VERSION/index.html"; then
+                echo "YES - This is the WRONG template (landing page)!"
+                echo ""
+                echo "❌ EXTRACTION FAILED: Landing page template copied to version location"
+                echo "This means the archive structure is not what we expected."
+                echo ""
+                echo "Archive should have:"
+                echo "  ./$VERSION/index.html  <- Redoc template"
+                echo "  ./index.html           <- Landing page template"
+                echo ""
+                echo "But the version location got the landing page template instead."
+                exit 1
+              else
+                echo "NO - Unknown template type"
+              fi
             fi
           else
             echo "❌ ERROR: Version-specific index.html missing at docs/$VERSION/index.html"
             echo "Available files:"
             ls -la "docs/$VERSION/"
+            exit 1
           fi
 
           if [ -f "docs/$VERSION/_tools/doc_updater.py" ]; then
