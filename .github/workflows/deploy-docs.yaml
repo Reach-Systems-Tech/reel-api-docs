@@ -54,11 +54,11 @@ jobs:
             echo "❌ Version-specific index.html missing!"
           fi
 
-          # Copy/update root index.html if this is the latest version
-          if [ "$VERSION" = "latest" ] || [ ! -f "docs/index.html" ]; then
+          # Copy/update root index.html to point to the newest version
+          if [ ! -f "docs/index.html" ]; then
             if [ -f "docs/$VERSION/index.html" ]; then
               cp "docs/$VERSION/index.html" "docs/index.html"
-              echo "✅ Updated root index.html"
+              echo "✅ Created root index.html pointing to $VERSION"
             fi
           fi
 
