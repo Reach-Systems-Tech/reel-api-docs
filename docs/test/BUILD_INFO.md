@@ -1,5 +1,0 @@
-Build Information:
-- Version: test
-- Git Commit: 5e62626c6f473cf26b6e623c92f3c3c3437b1068
-- Build Date: Wed Jun  4 18:37:37 UTC 2025
-- Built by: GitHub Actions
