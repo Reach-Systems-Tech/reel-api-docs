@@ -35,16 +35,39 @@ jobs:
           echo "Downloading docs for version: $VERSION"
           curl -L "$DOWNLOAD_URL" -o docs.tar.gz
 
+          # Debug: Show what we downloaded
+          echo "Archive contents:"
+          tar -tzf docs.tar.gz | head -10
+
           # Create/update version directory
           mkdir -p "docs/$VERSION"
           tar -xzf docs.tar.gz -C "docs/$VERSION"
+
+          # Debug: Show what was extracted
+          echo "Extracted structure:"
+          find "docs/$VERSION" -type f | head -10
+
+          # Ensure root-level files exist
+          if [ -f "docs/$VERSION/index.html" ]; then
+            echo "✅ Version-specific index.html found"
+          else
+            echo "❌ Version-specific index.html missing!"
+          fi
+
+          # Copy/update root index.html if this is the latest version
+          if [ "$VERSION" = "latest" ] || [ ! -f "docs/index.html" ]; then
+            if [ -f "docs/$VERSION/index.html" ]; then
+              cp "docs/$VERSION/index.html" "docs/index.html"
+              echo "✅ Updated root index.html"
+            fi
+          fi
 
           # Update versions list
           if [ ! -f "docs/versions.json" ]; then
             echo '["latest"]' > docs/versions.json
           fi
 
-          # Simple version management (you can make this more sophisticated)
+          # Version management
           python3 << 'EOF'
           import json
           import sys
@@ -74,7 +97,13 @@ jobs:
 
           with open('docs/versions.json', 'w') as f:
               json.dump(versions, f, indent=2)
+
+          print(f"Updated versions.json with: {versions}")
           EOF
+
+          # Final structure check
+          echo "Final docs structure:"
+          find docs -name "*.html" -o -name "*.json" | sort
 
           # Commit changes
           git config --local user.email "action@github.com"
