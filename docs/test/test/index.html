@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReelAPI v1 - test</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Roboto', sans-serif;
+        }
+        
+        .header-bar {
+            background: #ff092e;
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            height: 50px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .header-logo {
+            height: 32px;
+            width: auto;
+        }
+        
+        .header-title {
+            font-size: 18px;
+            font-weight: 500;
+        }
+        
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .version-selector {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        
+        .version-selector option {
+            background: #ff092e;
+            color: white;
+        }
+        
+        .documentation-notice {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            color: rgba(255,255,255,0.9);
+        }
+        
+        #redoc-container {
+            margin-top: 70px;
+        }
+        
+        /* Custom Redoc styling */
+        .redoc-wrap {
+            --color-primary: #ff092e;
+            --color-primary-light: #ff4757;
+            --color-primary-dark: #cb2c30;
+        }
+    </style>
+</head>
+<body>
+    <div class="header-bar">
+        <div class="header-left">
+            <img src="./icon.png" alt="Reach Systems Logo" class="header-logo" onerror="this.style.display='none'">
+            <div class="header-title">ReelAPI v1 Documentation</div>
+        </div>
+        <div class="header-controls">
+            <div class="documentation-notice">
+                📖 Static Documentation Mode
+            </div>
+            <select class="version-selector" id="version-select" onchange="switchVersion(this.value)">
+                <option value="test" selected>test</option>
+            </select>
+        </div>
+    </div>
+    
+    <div id="redoc-container"></div>
+    
+    <script src="https://cdn.redoc.ly/redoc/v2.1.3/bundles/redoc.standalone.js"></script>
+    <script>
+        function switchVersion(version) {
+            if (version === 'test') return;
+            
+            // Get the current path and extract the base documentation path
+            const currentPath = window.location.pathname;
+            
+            // Find the base path by removing the current version directory
+            // Examples:
+            // /latest/ -> /
+            // /docs/api/auto_docs/latest/ -> /docs/api/auto_docs/
+            // /1.1.14/ -> /
+            let basePath;
+            if (currentPath.endsWith('/latest/') || currentPath.endsWith('/latest')) {
+                basePath = currentPath.replace(/\/latest\/?$/, '/');
+            } else if (currentPath.match(/\/\d+\.\d+\.\d+\/$/)) {
+                basePath = currentPath.replace(/\/\d+\.\d+\.\d+\/?$/, '/');
+            } else {
+                // Fallback: assume we're in a version directory
+                const pathParts = currentPath.split('/');
+                pathParts.pop(); // Remove the last empty part (from trailing slash)
+                if (pathParts.length > 0) {
+                    pathParts.pop(); // Remove the version directory
+                }
+                basePath = pathParts.join('/') + '/';
+            }
+            
+            // Construct the new path
+            const newPath = basePath + version + '/';
+            
+            console.log('Switching from', currentPath, 'to', newPath);
+            window.location.href = newPath;
+        }
+        
+        // Load available versions and populate dropdown
+        fetch('../versions.json')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                return response.json();
+            })
+            .then(versions => {
+                console.log('Loaded versions:', versions);
+                const select = document.getElementById('version-select');
+                // Clear existing options
+                select.innerHTML = '';
+                
+                // Add all versions
+                versions.forEach(v => {
+                    const option = document.createElement('option');
+                    option.value = v;
+                    option.textContent = v;
+                    if (v === 'test') {
+                        option.selected = true;
+                    }
+                    select.appendChild(option);
+                });
+            })
+            .catch(error => {
+                console.error('Error loading versions.json:', error);
+                console.log('Trying alternative path...');
+                
+                // Try alternative path
+                fetch('./versions.json')
+                    .then(response => response.json())
+                    .then(versions => {
+                        console.log('Loaded versions from alternative path:', versions);
+                        const select = document.getElementById('version-select');
+                        select.innerHTML = '';
+                        versions.forEach(v => {
+                            const option = document.createElement('option');
+                            option.value = v;
+                            option.textContent = v;
+                            if (v === 'test') {
+                                option.selected = true;
+                            }
+                            select.appendChild(option);
+                        });
+                    })
+                    .catch(altError => {
+                        console.error('Alternative path also failed:', altError);
+                        // Keep the current version in the dropdown as fallback
+                    });
+            });
+        
+        // Initialize Redoc
+        window.onload = function() {
+            Redoc.init('./openapi.json', {
+                scrollYOffset: 70, // Account for fixed header
+                hideDownloadButton: false,
+                disableSearch: false,
+                expandResponses: "200,201",
+                expandSingleSchemaField: true,
+                hideHostname: false,
+                hideLoading: false,
+                menuToggle: true,
+                nativeScrollbars: false,
+                pathInMiddlePanel: true,
+                requiredPropsFirst: true,
+                sortPropsAlphabetically: false,
+                theme: {
+                    colors: {
+                        primary: {
+                            main: '#ff092e'
+                        }
+                    },
+                    typography: {
+                        fontSize: '14px',
+                        lineHeight: '1.5em',
+                        fontFamily: 'Roboto, sans-serif',
+                        headings: {
+                            fontFamily: 'Roboto, sans-serif',
+                            fontWeight: '500'
+                        }
+                    },
+                    sidebar: {
+                        backgroundColor: '#fafafa',
+                        width: '280px'
+                    },
+                    rightPanel: {
+                        backgroundColor: '#263238',
+                        width: '40%'
+                    }
+                }
+            }, document.getElementById('redoc-container'));
+        };
+    </script>
+</body>
+</html>
