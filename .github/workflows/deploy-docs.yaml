@@ -10,12 +10,6 @@ on:
 
 permissions:
   contents: write
-  pages: write
-  id-token: write
-
-concurrency:
-  group: "pages"
-  cancel-in-progress: false
 
 jobs:
   update-docs:
@@ -49,16 +43,16 @@ jobs:
 
           # Ensure root-level files exist
           if [ -f "docs/$VERSION/index.html" ]; then
-            echo "✅ Version-specific index.html found"
+            echo "Version-specific index.html found"
           else
-            echo "❌ Version-specific index.html missing!"
+            echo "Version-specific index.html missing!"
           fi
 
           # Copy/update root index.html to point to the newest version
           if [ ! -f "docs/index.html" ]; then
             if [ -f "docs/$VERSION/index.html" ]; then
               cp "docs/$VERSION/index.html" "docs/index.html"
-              echo "✅ Created root index.html pointing to $VERSION"
+              echo "Created root index.html pointing to $VERSION"
             fi
           fi
 
@@ -106,34 +100,16 @@ jobs:
           # Commit changes
           git config --local user.email "action@github.com"
           git config --local user.name "Documentation Bot"
+          
+          # Ensure we're on main branch
+          git checkout main
 
           git add docs/
           if ! git diff --cached --quiet; then
             git commit -m "Auto-update documentation for version $VERSION"
-            git push
+            git push origin main
+            echo "Documentation committed and pushed to main branch"
+            echo "GitHub Pages will automatically deploy from /docs folder"
+          else
+            echo "No changes to commit"
           fi
-
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    needs: [update-docs]
-    if: always() && (needs.update-docs.result == 'success' || needs.update-docs.result == 'skipped')
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          ref: main # Make sure we get the latest changes
-
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
-
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: ./docs
-
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
