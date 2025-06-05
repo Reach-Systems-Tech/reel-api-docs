@@ -3,25 +3,25 @@
 // Common version switching function
 function switchVersion(version, currentVersion) {
     if (version === currentVersion) return;
-    
+
     // Get the current path and extract the base documentation path
     const currentPath = window.location.pathname;
-    
+
     // Smart path detection for different deployment scenarios
     let basePath;
-    
+
     // Check if we're in a GitHub Pages environment
     const isGitHubPages = window.location.hostname.includes('github.io');
-    
+
     if (isGitHubPages) {
         // GitHub Pages: /repo-name/version/ format
         const pathParts = currentPath.split('/').filter(p => p);
-        
+
         // Find the current version directory
-        const currentVersionIndex = pathParts.findIndex(part => 
+        const currentVersionIndex = pathParts.findIndex(part =>
             /^(test\d*|\d+(\.\d+)*)$/.test(part) || part === 'latest'
         );
-        
+
         if (currentVersionIndex >= 0) {
             // Keep everything up to (but not including) the current version directory
             const basePathParts = pathParts.slice(0, currentVersionIndex);
@@ -39,10 +39,10 @@ function switchVersion(version, currentVersion) {
         } else {
             // Simple case: find and replace current version
             const pathParts = currentPath.split('/').filter(p => p);
-            const currentVersionIndex = pathParts.findIndex(part => 
+            const currentVersionIndex = pathParts.findIndex(part =>
                 /^(test\d*|\d+(\.\d+)*)$/.test(part)
             );
-            
+
             if (currentVersionIndex >= 0) {
                 const basePathParts = pathParts.slice(0, currentVersionIndex);
                 basePath = '/' + basePathParts.join('/');
@@ -52,36 +52,40 @@ function switchVersion(version, currentVersion) {
             }
         }
     }
-    
+
     // Construct the new path
     const newPath = basePath + version + '/';
-    
+
     console.log('Switching from', currentPath, 'to', newPath);
     window.location.href = newPath;
 }
 
-// UPDATED: Always load from root versions.json (single source of truth)
+// FIXED: Always load from root versions.json with proper fallback
 function loadVersions(currentVersion, populateCallback) {
-    // Calculate relative paths based on current location
-    const currentPath = window.location.pathname;
-    
+    console.log('Loading versions for current version:', currentVersion);
+
     // SIMPLIFIED: Always use the root versions.json file
     const versionsPaths = [
         '../versions.json',     // For version subdirectories (primary)
         './versions.json',      // For root pages
         '/versions.json',       // Absolute fallback
     ];
-    
+
     function tryLoadVersions(pathIndex = 0) {
         if (pathIndex >= versionsPaths.length) {
             console.error('Could not load versions.json from any path');
             console.log('Tried paths:', versionsPaths);
+            // FIXED: Always call the callback, even if we failed to load
+            if (populateCallback) {
+                console.log('Using fallback: single version dropdown');
+                populateCallback([currentVersion], currentVersion);
+            }
             return;
         }
-        
+
         const path = versionsPaths[pathIndex];
         console.log(`Trying to load versions from: ${path}`);
-        
+
         fetch(path)
             .then(response => {
                 if (!response.ok) {
@@ -90,7 +94,7 @@ function loadVersions(currentVersion, populateCallback) {
                 return response.json();
             })
             .then(versions => {
-                console.log('Successfully loaded versions:', versions);
+                console.log('Successfully loaded versions from', path, ':', versions);
                 if (populateCallback) {
                     populateCallback(versions, currentVersion);
                 }
@@ -101,7 +105,7 @@ function loadVersions(currentVersion, populateCallback) {
                 tryLoadVersions(pathIndex + 1);
             });
     }
-    
+
     // Start trying paths
     tryLoadVersions();
 }
@@ -110,10 +114,10 @@ function loadVersions(currentVersion, populateCallback) {
 function populateVersionDropdown(versions, currentVersion) {
     const select = document.getElementById('version-select');
     if (!select) return;
-    
+
     // Clear existing options
     select.innerHTML = '';
-    
+
     // Add all versions
     versions.forEach(v => {
         const option = document.createElement('option');
