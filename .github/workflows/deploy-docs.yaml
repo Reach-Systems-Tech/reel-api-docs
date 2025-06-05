@@ -52,184 +52,23 @@ jobs:
             fi
           done
 
-      - name: Download and extract documentation with shared assets
-        run: |
-          VERSION="${{ github.event.client_payload.version }}"
-          DOWNLOAD_URL="${{ github.event.client_payload.download_url }}"
-          USES_SHARED_ASSETS="${{ github.event.client_payload.uses_shared_assets }}"
+          - name: Download and extract documentation with shared assets
+          run: |
+            VERSION="${{ github.event.client_payload.version }}"
+            DOWNLOAD_URL="${{ github.event.client_payload.download_url }}"
+            USES_SHARED_ASSETS="${{ github.event.client_payload.uses_shared_assets }}"
 
-          echo "Downloading docs for version: $VERSION"
-          echo "Uses shared assets: $USES_SHARED_ASSETS"
-          curl -L "$DOWNLOAD_URL" -o docs.tar.gz
+            # Make extraction script executable
+            chmod +x .github/scripts/extract_docs.sh
 
-          # Debug: Show what we downloaded
-          echo "Archive contents preview:"
-          tar -tzf docs.tar.gz | head -20
+            # Run the extraction script
+            .github/scripts/extract_docs.sh \
+              --version "$VERSION" \
+              --download-url "$DOWNLOAD_URL" \
+              $([ "$USES_SHARED_ASSETS" = "true" ] && echo "--uses-shared-assets")
 
-          # Extract to temp directory first to see structure
-          mkdir temp_extract
-          tar -xzf docs.tar.gz -C temp_extract
-
-          echo "Extracted archive structure:"
-          find temp_extract -type f | head -20
-
-          # SHARED ASSETS HANDLING
-          echo ""
-          echo "=== SHARED ASSETS EXTRACTION ==="
-
-          # Extract shared assets to docs root (these should be updated every time)
-          shared_assets=("styles.css" "scripts.js" "icon.png" ".nojekyll")
-
-          for asset in "${shared_assets[@]}"; do
-            if [ -f "temp_extract/$asset" ]; then
-              echo "Updating shared asset: $asset"
-              cp "temp_extract/$asset" "docs/$asset"
-              echo "  Updated docs/$asset ($(wc -c < docs/$asset) bytes)"
-            else
-              echo "  Shared asset $asset not found in archive"
-            fi
-          done
-
-          # VERSION-SPECIFIC FILES HANDLING
-          echo ""
-          echo "=== VERSION-SPECIFIC FILES EXTRACTION ==="
-
-          # Handle version-specific content
-          if [ -d "temp_extract/$VERSION" ]; then
-            echo "Found version-specific directory in archive: temp_extract/$VERSION"
-            
-            # Create version directory
-            mkdir -p "docs/$VERSION"
-            
-            # Copy ONLY the version-specific files
-            echo "Copying version-specific files from temp_extract/$VERSION/ to docs/$VERSION/"
-            cp -r temp_extract/$VERSION/* "docs/$VERSION/"
-            
-            # DO NOT COPY global files that would overwrite repo state!
-            echo "Skipping archive versions.json to preserve repo state"
-            
-            echo "CORRECT extraction: Version-specific files to docs/$VERSION/"
-            
-          elif [ -d "temp_extract/docs/api/auto_docs" ]; then
-            echo "Found nested docs/api/auto_docs structure - extracting correctly..."
-            
-            # Handle shared assets from nested structure
-            nested_path="temp_extract/docs/api/auto_docs"
-            
-            for asset in "${shared_assets[@]}"; do
-              if [ -f "$nested_path/$asset" ]; then
-                echo "Updating shared asset from nested path: $asset"
-                cp "$nested_path/$asset" "docs/$asset"
-              fi
-            done
-            
-            # Create version directory and copy version-specific files
-            mkdir -p "docs/$VERSION"
-            if [ -d "$nested_path/$VERSION" ]; then
-              echo "Moving version-specific files from $nested_path/$VERSION/ to docs/$VERSION/"
-              cp -r $nested_path/$VERSION/* "docs/$VERSION/"
-            else
-              echo "ERROR: Version directory not found in nested structure!"
-              find temp_extract -type d -name "$VERSION"
-              exit 1
-            fi
-            
-          else
-            echo "ERROR: Unrecognized archive structure!"
-            echo "Expected either:"
-            echo "  - Flat structure with $VERSION/ directory and shared assets"
-            echo "  - Nested docs/api/auto_docs/ structure"
-            echo ""
-            echo "Found structure:"
-            find temp_extract -type d
-            exit 1
-          fi
-
-          # Copy tools if they exist
-          if [ -d "temp_extract/_tools" ]; then
-            cp -r temp_extract/_tools "docs/$VERSION/"
-            echo "Copied _tools directory"
-          fi
-
-          # Clean up temp directory
-          rm -rf temp_extract
-
-          echo ""
-          echo "=== POST-EXTRACTION VERIFICATION ==="
-          echo "Final extracted structure:"
-          find "docs/$VERSION" -type f | head -15
-          echo "Total files extracted: $(find "docs/$VERSION" -type f | wc -l)"
-
-          # Verify shared assets
-          echo ""
-          echo "Shared assets verification:"
-          for asset in "${shared_assets[@]}"; do
-            if [ -f "docs/$asset" ]; then
-              echo "  docs/$asset exists ($(wc -c < docs/$asset) bytes)"
-            else
-              echo "  docs/$asset missing!"
-            fi
-          done
-
-          # Verify key files exist in correct locations
-          if [ -f "docs/$VERSION/index.html" ]; then
-            echo ""
-            echo "Version-specific index.html found at docs/$VERSION/index.html"
-            
-            # Check file size - Redoc templates should be smaller now (shared assets)
-            file_size=$(wc -c < "docs/$VERSION/index.html")
-            echo "File size: $file_size bytes"
-            
-            # Check template type
-            if grep -q "redoc-container" "docs/$VERSION/index.html"; then
-              echo "CORRECT: Version index.html contains Redoc template"
-              
-              # Verify shared asset links
-              if grep -q 'href="../styles.css"' "docs/$VERSION/index.html"; then
-                echo "CORRECT: Version file links to shared CSS"
-              else
-                echo "ERROR: Version file missing shared CSS link"
-              fi
-              
-              if grep -q 'src="../scripts.js"' "docs/$VERSION/index.html"; then
-                echo "CORRECT: Version file links to shared JS"
-              else
-                echo "ERROR: Version file missing shared JS link"
-              fi
-              
-            else
-              echo "ERROR: Version index.html does not contain Redoc template"
-              echo "First 200 chars of version index.html:"
-              head -c 200 "docs/$VERSION/index.html"
-              
-              # Additional debugging
-              echo ""
-              echo "File details:"
-              ls -la "docs/$VERSION/index.html"
-              echo "Does it contain 'Auto-redirecting'?"
-              if grep -q "Auto-redirecting" "docs/$VERSION/index.html"; then
-                echo "YES - This is the WRONG template (landing page)!"
-                echo ""
-                echo "EXTRACTION FAILED: Landing page template copied to version location"
-                exit 1
-              else
-                echo "NO - Unknown template type"
-              fi
-            fi
-          else
-            echo "ERROR: Version-specific index.html missing at docs/$VERSION/index.html"
-            echo "Available files:"
-            ls -la "docs/$VERSION/"
-            exit 1
-          fi
-
-          if [ -f "docs/$VERSION/_tools/doc_updater.py" ]; then
-            echo "Documentation updater tool found"
-          else
-            echo "Documentation updater tool missing!"
-            echo "Available files in version directory:"
-            find "docs/$VERSION" -name "*.py" || echo "No Python files found"
-          fi
+            # Clean up archive file
+            rm -f docs.tar.gz
 
       - name: Update versions.json with semantic sorting
         run: |
