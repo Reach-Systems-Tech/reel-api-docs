@@ -560,3 +560,24 @@ jobs:
           - Easy CSS/JS updates (edit once, affects all)
           - Better performance with asset caching
           - Smaller total repository size"
+            
+            git push origin main
+            echo "Documentation committed and pushed to main branch"
+            echo "GitHub Pages will automatically deploy from /docs folder"
+            echo ""
+            echo "Documentation will be available at:"
+            echo "   - Root: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/"
+            echo "   - Version $VERSION: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/$VERSION/"
+            echo ""
+            echo "🎨 Shared Assets Features:"
+            echo "   - All pages use shared styles.css for consistent styling"
+            echo "   - All pages use shared scripts.js for version switching"
+            echo "   - All pages use shared icon.png for branding"
+            echo "   - Easy maintenance: edit assets once, affects all versions"
+          else
+            echo "No changes to commit"
+          fi
+
+      - name: Clean up temporary files
+        run: |
+          rm -f docs.tar.gz latest_version.txt
