@@ -153,89 +153,15 @@ jobs:
 
       - name: Create root index.html ONLY if missing
         run: |
-          # ONLY create root index.html if it doesn't exist
-          if [ ! -f "docs/index.html" ]; then
-            LATEST_VERSION=$(cat latest_version.txt 2>/dev/null || echo "unknown")
-            
-            echo "Creating root landing page index.html with shared assets..."
-            echo "Latest version: $LATEST_VERSION"
-            
-            # Extract API title from a version-specific file
-            API_TITLE="API Documentation"
-            if [ -f "docs/$LATEST_VERSION/index.html" ]; then
-              API_TITLE=$(grep -o '<title>[^<]*</title>' "docs/$LATEST_VERSION/index.html" | sed 's/<title>\(.*\) - .*/\1/' | head -1 || echo "API Documentation")
-              API_TITLE=$(echo "$API_TITLE" | sed 's/<[^>]*>//g' | sed 's/Documentation.*//' | xargs)
-              if [ -z "$API_TITLE" ]; then
-                API_TITLE="API Documentation"
-              fi
-              echo "Extracted API title: '$API_TITLE'"
-            fi
-            
-            # Create the HTML file using echo statements (YAML-safe) with shared assets
-            {
-              echo '<!DOCTYPE html>'
-              echo '<html lang="en">'
-              echo '<head>'
-              echo '    <meta charset="UTF-8">'
-              echo '    <meta name="viewport" content="width=device-width, initial-scale=1.0">'
-              echo "    <title>$API_TITLE Documentation</title>"
-              echo '    <link rel="stylesheet" href="styles.css">'
-              echo '</head>'
-              echo '<body class="landing-page">'
-              echo '    <div class="landing-container">'
-              echo "        <h1>$API_TITLE Documentation</h1>"
-              echo '        <div class="auto-redirect">'
-              echo "            <p><strong>Auto-redirecting to latest version ($LATEST_VERSION) in 3 seconds...</strong></p>"
-              echo "            <p><a href=\"$LATEST_VERSION/\">Click here to go immediately</a></p>"
-              echo '        </div>'
-              echo '        <div class="features">'
-              echo '            <h3>Enhanced with Redoc</h3>'
-              echo '            <ul>'
-              echo '                <li><strong>Built-in sidebar navigation</strong> - Easy browsing of endpoints</li>'
-              echo '                <li><strong>Search functionality</strong> - Find endpoints and schemas quickly</li>'
-              echo '                <li><strong>Three-panel layout</strong> - Description, examples, and schemas</li>'
-              echo '                <li><strong>Responsive design</strong> - Works great on all devices</li>'
-              echo '                <li><strong>Static documentation</strong> - Perfect for hardware systems</li>'
-              echo '            </ul>'
-              echo '        </div>'
-              echo '        <h2>Available Versions</h2>'
-              echo '        <ul class="version-list">'
-              echo "            <li><a href=\"$LATEST_VERSION/\" class=\"latest\">$LATEST_VERSION (latest)</a></li>"
-              echo '        </ul>'
-              echo '    </div>'
-              echo '    <script src="scripts.js"></script>'
-              echo '    <script>'
-              echo "        setupAutoRedirect('$LATEST_VERSION');"
-              echo '    </script>'
-              echo '</body>'
-              echo '</html>'
-            } > docs/index.html
-            
-            echo "Created root index.html with landing page template and shared assets"
-            
-            # Verify shared asset links
-            if grep -q 'href="styles.css"' docs/index.html; then
-              echo "Root correctly links to shared CSS"
-            else
-              echo "Root missing shared CSS link"
-            fi
-            
-            if grep -q 'src="scripts.js"' docs/index.html; then
-              echo "Root correctly links to shared JS"
-            else
-              echo "Root missing shared JS link"
-            fi
-            
-          else
-            echo "Root index.html already exists, not overwriting"
-            
-            # Verify existing root has correct shared asset links
-            if grep -q 'href="styles.css"' docs/index.html; then
-              echo "Existing root correctly links to shared CSS"
-            else
-              echo "Existing root may need shared CSS link update"
-            fi
-          fi
+          # Get the latest version from previous step
+          LATEST_VERSION=$(cat latest_version.txt 2>/dev/null || echo "unknown")
+
+          # Make landing page script executable
+          chmod +x .github/scripts/create_landing_page.sh
+
+          # Run the landing page creation script
+          .github/scripts/create_landing_page.sh \
+              --latest-version "$LATEST_VERSION"
 
       - name: Clean up tool files from docs
         run: |
