@@ -52,23 +52,23 @@ jobs:
             fi
           done
 
-          - name: Download and extract documentation with shared assets
-          run: |
-            VERSION="${{ github.event.client_payload.version }}"
-            DOWNLOAD_URL="${{ github.event.client_payload.download_url }}"
-            USES_SHARED_ASSETS="${{ github.event.client_payload.uses_shared_assets }}"
+      - name: Download and extract documentation with shared assets
+        run: |
+          VERSION="${{ github.event.client_payload.version }}"
+          DOWNLOAD_URL="${{ github.event.client_payload.download_url }}"
+          USES_SHARED_ASSETS="${{ github.event.client_payload.uses_shared_assets }}"
 
-            # Make extraction script executable
-            chmod +x .github/scripts/extract_docs.sh
+          # Make extraction script executable
+          chmod +x .github/scripts/extract_docs.sh
 
-            # Run the extraction script
-            .github/scripts/extract_docs.sh \
-              --version "$VERSION" \
-              --download-url "$DOWNLOAD_URL" \
-              $([ "$USES_SHARED_ASSETS" = "true" ] && echo "--uses-shared-assets")
+          # Run the extraction script
+          .github/scripts/extract_docs.sh \
+            --version "$VERSION" \
+            --download-url "$DOWNLOAD_URL" \
+            $([ "$USES_SHARED_ASSETS" = "true" ] && echo "--uses-shared-assets")
 
-            # Clean up archive file
-            rm -f docs.tar.gz
+          # Clean up archive file
+          rm -f docs.tar.gz
 
       - name: Update versions.json with semantic sorting
         run: |
@@ -79,19 +79,19 @@ jobs:
 
           # Show current state
           if [ -f "docs/versions.json" ]; then
-          echo "Current versions.json content:"
-          cat docs/versions.json
+            echo "Current versions.json content:"
+            cat docs/versions.json
           else
-          echo "No existing versions.json found"
-          mkdir -p docs
-          echo '[]' > docs/versions.json
+            echo "No existing versions.json found"
+            mkdir -p docs
+            echo '[]' > docs/versions.json
           fi
 
           # Run the version manager script
           python3 .github/scripts/version_manager.py \
-          --docs-dir docs \
-          --version "$VERSION" \
-          --output-latest latest_version.txt
+            --docs-dir docs \
+            --version "$VERSION" \
+            --output-latest latest_version.txt
 
           echo ""
           echo "=== FINAL VERSIONS.JSON CONTENT ==="
