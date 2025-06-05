@@ -31,7 +31,7 @@ jobs:
           echo "=== ENSURING LATEST REPO STATE ==="
           git checkout main
           git pull origin main || echo "Nothing to pull"
-          
+
           # Show current state
           echo "Current versions.json (if exists):"
           if [ -f "docs/versions.json" ]; then
@@ -39,30 +39,62 @@ jobs:
           else
             echo "No versions.json found"
           fi
-          
+
           echo "Current docs structure:"
           ls -la docs/ 2>/dev/null || echo "No docs directory yet"
 
-      - name: Download and extract documentation
+          echo "Current shared assets:"
+          for asset in styles.css scripts.js icon.png .nojekyll; do
+            if [ -f "docs/$asset" ]; then
+              echo "  ✅ $asset exists ($(wc -c < docs/$asset) bytes)"
+            else
+              echo "  ❌ $asset missing"
+            fi
+          done
+
+      - name: Download and extract documentation with shared assets
         run: |
           VERSION="${{ github.event.client_payload.version }}"
           DOWNLOAD_URL="${{ github.event.client_payload.download_url }}"
+          USES_SHARED_ASSETS="${{ github.event.client_payload.uses_shared_assets }}"
 
           echo "Downloading docs for version: $VERSION"
+          echo "Uses shared assets: $USES_SHARED_ASSETS"
           curl -L "$DOWNLOAD_URL" -o docs.tar.gz
 
           # Debug: Show what we downloaded
           echo "Archive contents preview:"
-          tar -tzf docs.tar.gz | head -15
+          tar -tzf docs.tar.gz | head -20
 
-          # FIXED: Extract to temp directory first to see structure
+          # Extract to temp directory first to see structure
           mkdir temp_extract
           tar -xzf docs.tar.gz -C temp_extract
 
           echo "Extracted archive structure:"
-          find temp_extract -type f | head -15
+          find temp_extract -type f | head -20
 
-          # CRITICAL: Handle the flat structure correctly - this is the key fix!
+          # SHARED ASSETS HANDLING
+          echo ""
+          echo "=== SHARED ASSETS EXTRACTION ==="
+
+          # Extract shared assets to docs root (these should be updated every time)
+          shared_assets=("styles.css" "scripts.js" "icon.png" ".nojekyll")
+
+          for asset in "${shared_assets[@]}"; do
+            if [ -f "temp_extract/$asset" ]; then
+              echo "📄 Updating shared asset: $asset"
+              cp "temp_extract/$asset" "docs/$asset"
+              echo "  ✅ Updated docs/$asset ($(wc -c < docs/$asset) bytes)"
+            else
+              echo "  ⚠️  Shared asset $asset not found in archive"
+            fi
+          done
+
+          # VERSION-SPECIFIC FILES HANDLING
+          echo ""
+          echo "=== VERSION-SPECIFIC FILES EXTRACTION ==="
+
+          # Handle version-specific content
           if [ -d "temp_extract/$VERSION" ]; then
             echo "Found version-specific directory in archive: temp_extract/$VERSION"
             
@@ -74,45 +106,49 @@ jobs:
             cp -r temp_extract/$VERSION/* "docs/$VERSION/"
             
             # DO NOT COPY global files that would overwrite repo state!
-            # Skip temp_extract/versions.json - we'll update it properly later
             echo "⚠️  Skipping archive versions.json to preserve repo state"
-            
-            # Copy tools if they exist
-            if [ -d "temp_extract/_tools" ]; then
-              cp -r temp_extract/_tools "docs/$VERSION/"
-              echo "Copied _tools directory"
-            fi
             
             echo "✅ CORRECT extraction: Version-specific files to docs/$VERSION/"
             
           elif [ -d "temp_extract/docs/api/auto_docs" ]; then
             echo "Found nested docs/api/auto_docs structure - extracting correctly..."
             
-            # Create version directory
-            mkdir -p "docs/$VERSION"
+            # Handle shared assets from nested structure
+            nested_path="temp_extract/docs/api/auto_docs"
             
-            # Move version-specific files from nested structure
-            if [ -d "temp_extract/docs/api/auto_docs/$VERSION" ]; then
-              echo "Moving version-specific files from temp_extract/docs/api/auto_docs/$VERSION/ to docs/$VERSION/"
-              cp -r temp_extract/docs/api/auto_docs/$VERSION/* "docs/$VERSION/"
+            for asset in "${shared_assets[@]}"; do
+              if [ -f "$nested_path/$asset" ]; then
+                echo "📄 Updating shared asset from nested path: $asset"
+                cp "$nested_path/$asset" "docs/$asset"
+              fi
+            done
+            
+            # Create version directory and copy version-specific files
+            mkdir -p "docs/$VERSION"
+            if [ -d "$nested_path/$VERSION" ]; then
+              echo "Moving version-specific files from $nested_path/$VERSION/ to docs/$VERSION/"
+              cp -r $nested_path/$VERSION/* "docs/$VERSION/"
             else
               echo "❌ ERROR: Version directory not found in nested structure!"
               find temp_extract -type d -name "$VERSION"
               exit 1
             fi
             
-            # DO NOT copy global versions.json from archive!
-            echo "⚠️  Skipping archive versions.json to preserve repo state"
-            
           else
             echo "❌ ERROR: Unrecognized archive structure!"
             echo "Expected either:"
-            echo "  - Flat structure with $VERSION/ directory"
+            echo "  - Flat structure with $VERSION/ directory and shared assets"
             echo "  - Nested docs/api/auto_docs/ structure"
             echo ""
             echo "Found structure:"
             find temp_extract -type d
             exit 1
+          fi
+
+          # Copy tools if they exist
+          if [ -d "temp_extract/_tools" ]; then
+            cp -r temp_extract/_tools "docs/$VERSION/"
+            echo "📄 Copied _tools directory"
           fi
 
           # Clean up temp directory
@@ -124,23 +160,43 @@ jobs:
           find "docs/$VERSION" -type f | head -15
           echo "Total files extracted: $(find "docs/$VERSION" -type f | wc -l)"
 
+          # Verify shared assets
+          echo ""
+          echo "Shared assets verification:"
+          for asset in "${shared_assets[@]}"; do
+            if [ -f "docs/$asset" ]; then
+              echo "  ✅ docs/$asset exists ($(wc -c < docs/$asset) bytes)"
+            else
+              echo "  ❌ docs/$asset missing!"
+            fi
+          done
+
           # Verify key files exist in correct locations
           if [ -f "docs/$VERSION/index.html" ]; then
+            echo ""
             echo "✅ Version-specific index.html found at docs/$VERSION/index.html"
             
-            # Check file size - Redoc templates are ~10k, landing pages are ~3k
+            # Check file size - Redoc templates should be smaller now (shared assets)
             file_size=$(wc -c < "docs/$VERSION/index.html")
             echo "File size: $file_size bytes"
-            
-            if [ $file_size -gt 8000 ]; then
-              echo "✅ File size suggests Redoc template (>8k bytes)"
-            else
-              echo "⚠️  File size suggests landing page template (<8k bytes)"
-            fi
             
             # Check template type
             if grep -q "redoc-container" "docs/$VERSION/index.html"; then
               echo "✅ CORRECT: Version index.html contains Redoc template"
+              
+              # Verify shared asset links
+              if grep -q 'href="../styles.css"' "docs/$VERSION/index.html"; then
+                echo "✅ CORRECT: Version file links to shared CSS"
+              else
+                echo "❌ ERROR: Version file missing shared CSS link"
+              fi
+              
+              if grep -q 'src="../scripts.js"' "docs/$VERSION/index.html"; then
+                echo "✅ CORRECT: Version file links to shared JS"
+              else
+                echo "❌ ERROR: Version file missing shared JS link"
+              fi
+              
             else
               echo "❌ ERROR: Version index.html does not contain Redoc template"
               echo "First 200 chars of version index.html:"
@@ -174,12 +230,6 @@ jobs:
             echo "Available files in version directory:"
             find "docs/$VERSION" -name "*.py" || echo "No Python files found"
           fi
-
-      - name: Disable Jekyll processing
-        run: |
-          # Create .nojekyll file to disable Jekyll processing
-          touch docs/.nojekyll
-          echo "✅ Created .nojekyll file to disable Jekyll processing"
 
       - name: Update versions.json with semantic sorting
         run: |
@@ -268,6 +318,13 @@ jobs:
             if [ -f "docs/$VERSION/index.html" ]; then
               if grep -q "redoc-container" "docs/$VERSION/index.html"; then
                 echo "✅ PRE-UPDATE: Version file has correct Redoc template"
+                
+                # Also verify shared asset links
+                if grep -q 'href="../styles.css"' "docs/$VERSION/index.html"; then
+                  echo "✅ PRE-UPDATE: Version file correctly links to shared CSS"
+                else
+                  echo "⚠️  PRE-UPDATE: Version file missing shared CSS link"
+                fi
               else
                 echo "❌ PRE-UPDATE: Version file has WRONG template - stopping here!"
                 echo "Content preview:"
@@ -282,6 +339,13 @@ jobs:
             if [ -f "docs/$VERSION/index.html" ]; then
               if grep -q "redoc-container" "docs/$VERSION/index.html"; then
                 echo "✅ POST-UPDATE: Version file still has correct Redoc template"
+                
+                # Verify shared asset links are preserved
+                if grep -q 'href="../styles.css"' "docs/$VERSION/index.html"; then
+                  echo "✅ POST-UPDATE: Shared CSS link preserved"
+                else
+                  echo "❌ POST-UPDATE: Shared CSS link was lost!"
+                fi
               else
                 echo "❌ POST-UPDATE: doc_updater.py CORRUPTED the version file!"
                 echo "This confirms doc_updater.py is overwriting templates instead of just updating dropdowns"
@@ -295,13 +359,13 @@ jobs:
             echo "Files will still be deployed but version navigation may be limited"
           fi
 
-      - name: Create root index.html ONLY if missing (and only create landing page)
+      - name: Create root index.html ONLY if missing
         run: |
           # ONLY create root index.html if it doesn't exist
           if [ ! -f "docs/index.html" ]; then
             LATEST_VERSION=$(cat latest_version.txt 2>/dev/null || echo "unknown")
             
-            echo "Creating root landing page index.html..."
+            echo "Creating root landing page index.html with shared assets..."
             echo "Latest version: $LATEST_VERSION"
             
             # Extract API title from a version-specific file
@@ -315,7 +379,7 @@ jobs:
               echo "Extracted API title: '$API_TITLE'"
             fi
             
-            # Create the HTML file using echo statements (YAML-safe)
+            # Create the HTML file using echo statements (YAML-safe) with shared assets
             {
               echo '<!DOCTYPE html>'
               echo '<html lang="en">'
@@ -323,42 +387,62 @@ jobs:
               echo '    <meta charset="UTF-8">'
               echo '    <meta name="viewport" content="width=device-width, initial-scale=1.0">'
               echo "    <title>$API_TITLE Documentation</title>"
-              echo '    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">'
-              echo '    <style>'
-              echo '        body { font-family: '\''Roboto'\'', sans-serif; max-width: 800px; margin: 0 auto; padding: 40px 20px; line-height: 1.6; background: #fafafa; }'
-              echo '        .container { background: white; padding: 40px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }'
-              echo '        h1 { color: #ff092e; border-bottom: 2px solid #ff092e; padding-bottom: 10px; margin-top: 0; }'
-              echo '        .version-list { list-style: none; padding: 0; }'
-              echo '        .version-list li { margin: 15px 0; }'
-              echo '        .version-list a { display: inline-block; padding: 12px 24px; background: #f8f9fa; color: #124AFF; text-decoration: none; border-radius: 6px; border: 1px solid #e9ecef; transition: all 0.2s; font-weight: 500; }'
-              echo '        .version-list a:hover { background: #124AFF; color: white; transform: translateY(-1px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }'
-              echo '        .latest { background: #ff092e !important; color: white !important; }'
-              echo '        .latest:hover { background: #cb2c30 !important; }'
-              echo '        .auto-redirect { background: #fff3cd; border: 1px solid #ffeaa7; padding: 20px; border-radius: 6px; margin: 25px 0; }'
-              echo '    </style>'
+              echo '    <link rel="stylesheet" href="styles.css">'
               echo '</head>'
-              echo '<body>'
-              echo '    <div class="container">'
+              echo '<body class="landing-page">'
+              echo '    <div class="landing-container">'
               echo "        <h1>$API_TITLE Documentation</h1>"
               echo '        <div class="auto-redirect">'
               echo "            <p><strong>Auto-redirecting to latest version ($LATEST_VERSION) in 3 seconds...</strong></p>"
               echo "            <p><a href=\"$LATEST_VERSION/\">Click here to go immediately</a></p>"
+              echo '        </div>'
+              echo '        <div class="features">'
+              echo '            <h3>Enhanced with Redoc</h3>'
+              echo '            <ul>'
+              echo '                <li><strong>Built-in sidebar navigation</strong> - Easy browsing of endpoints</li>'
+              echo '                <li><strong>Search functionality</strong> - Find endpoints and schemas quickly</li>'
+              echo '                <li><strong>Three-panel layout</strong> - Description, examples, and schemas</li>'
+              echo '                <li><strong>Responsive design</strong> - Works great on all devices</li>'
+              echo '                <li><strong>Static documentation</strong> - Perfect for hardware systems</li>'
+              echo '            </ul>'
               echo '        </div>'
               echo '        <h2>Available Versions</h2>'
               echo '        <ul class="version-list">'
               echo "            <li><a href=\"$LATEST_VERSION/\" class=\"latest\">$LATEST_VERSION (latest)</a></li>"
               echo '        </ul>'
               echo '    </div>'
+              echo '    <script src="scripts.js"></script>'
               echo '    <script>'
-              echo "        setTimeout(() => { window.location.href = '$LATEST_VERSION/'; }, 3000);"
+              echo "        setupAutoRedirect('$LATEST_VERSION');"
               echo '    </script>'
               echo '</body>'
               echo '</html>'
             } > docs/index.html
             
-            echo "✅ Created root index.html with landing page template"
+            echo "✅ Created root index.html with landing page template and shared assets"
+            
+            # Verify shared asset links
+            if grep -q 'href="styles.css"' docs/index.html; then
+              echo "✅ Root correctly links to shared CSS"
+            else
+              echo "❌ Root missing shared CSS link"
+            fi
+            
+            if grep -q 'src="scripts.js"' docs/index.html; then
+              echo "✅ Root correctly links to shared JS"
+            else
+              echo "❌ Root missing shared JS link"
+            fi
+            
           else
             echo "Root index.html already exists, not overwriting"
+            
+            # Verify existing root has correct shared asset links
+            if grep -q 'href="styles.css"' docs/index.html; then
+              echo "✅ Existing root correctly links to shared CSS"
+            else
+              echo "⚠️  Existing root may need shared CSS link update"
+            fi
           fi
 
       - name: Clean up tool files from docs
@@ -370,12 +454,24 @@ jobs:
 
       - name: Final structure verification
         run: |
-          echo "=== FINAL DOCUMENTATION STRUCTURE ==="
-          find docs -name "*.html" -o -name "*.json" | sort
+          echo "=== FINAL DOCUMENTATION STRUCTURE WITH SHARED ASSETS ==="
+          find docs -name "*.html" -o -name "*.json" -o -name "*.css" -o -name "*.js" -o -name "*.png" | sort
 
           echo ""
           echo "=== versions.json content ==="
           cat docs/versions.json
+
+          echo ""
+          echo "=== SHARED ASSETS VERIFICATION ==="
+          shared_assets=("styles.css" "scripts.js" "icon.png" ".nojekyll")
+
+          for asset in "${shared_assets[@]}"; do
+            if [ -f "docs/$asset" ]; then
+              echo "✅ docs/$asset exists ($(wc -c < docs/$asset) bytes)"
+            else
+              echo "❌ docs/$asset missing!"
+            fi
+          done
 
           echo ""
           echo "=== CRITICAL VERIFICATION CHECKS ==="
@@ -386,6 +482,13 @@ jobs:
               echo "✅ Root index.html has CORRECT landing page template"
             else
               echo "❌ Root index.html has WRONG template"
+            fi
+            
+            # Check shared asset links
+            if grep -q 'href="styles.css"' docs/index.html; then
+              echo "✅ Root correctly uses shared CSS"
+            else
+              echo "❌ Root missing shared CSS link"
             fi
           else
             echo "❌ Root index.html missing!"
@@ -407,6 +510,13 @@ jobs:
                 if [ -f "$version_dir/index.html" ]; then
                   if grep -q "redoc-container" "$version_dir/index.html" && ! grep -q "Auto-redirecting" "$version_dir/index.html"; then
                     echo "  ✅ $version/index.html has CORRECT Redoc template"
+                    
+                    # Check shared asset links
+                    if grep -q 'href="../styles.css"' "$version_dir/index.html"; then
+                      echo "  ✅ $version correctly uses shared CSS"
+                    else
+                      echo "  ❌ $version missing shared CSS link"
+                    fi
                   else
                     echo "  ❌ $version/index.html has WRONG template!"
                     echo "  First 100 chars:"
@@ -436,26 +546,17 @@ jobs:
 
           git add docs/
           if ! git diff --cached --quiet; then
-            git commit -m "Auto-update documentation for version $VERSION
+            git commit -m "Auto-update documentation for version $VERSION (with shared assets)
 
           - Added/updated version $VERSION documentation  
+          - Updated shared CSS and JavaScript assets
           - Updated all version dropdowns and navigation
           - Synchronized versions.json across all directories
           - Updated root index.html with latest version list
+          - All pages now use shared assets for easier maintenance
 
-          All documentation files now have dynamic version switching capability."
-            
-            git push origin main
-            echo "Documentation committed and pushed to main branch"
-            echo "GitHub Pages will automatically deploy from /docs folder"
-            echo ""
-            echo "Documentation will be available at:"
-            echo "   - Root: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/"
-            echo "   - Version $VERSION: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/$VERSION/"
-          else
-            echo "No changes to commit"
-          fi
-
-      - name: Clean up temporary files
-        run: |
-          rm -f docs.tar.gz latest_version.txt
+          Shared Assets Benefits:
+          - Consistent styling across all versions
+          - Easy CSS/JS updates (edit once, affects all)
+          - Better performance with asset caching
+          - Smaller total repository size"
