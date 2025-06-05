@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ReelAPI v1 - test2</title>
+    <title>ReelAPI v1 - test4</title>
     <link rel="stylesheet" href="../styles.css">
 </head>
 <body>
@@ -16,11 +16,8 @@
             <div class="documentation-notice">
                 Static Documentation Mode
             </div>
-            <select class="version-selector" id="version-select" onchange="switchVersion(this.value, 'test2')">
-                <option value="test4" >test4</option>
-                <option value="test3" >test3</option>
-                <option value="test2" selected>test2</option>
-                <option value="test1" >test1</option>
+            <select class="version-selector" id="version-select" onchange="switchVersion(this.value, 'test4')">
+                <option value="test4" selected>test4</option>
             </select>
         </div>
     </div>
@@ -33,7 +30,7 @@
         // Initialize Redoc
         window.onload = function() {
             // Load versions for dropdown
-            loadVersions('test2', populateVersionDropdown);
+            loadVersions('test4', populateVersionDropdown);
             
             // Initialize Redoc
             Redoc.init('./openapi.json', {
