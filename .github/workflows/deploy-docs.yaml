@@ -172,85 +172,13 @@ jobs:
 
       - name: Final structure verification
         run: |
-          echo "=== FINAL DOCUMENTATION STRUCTURE WITH SHARED ASSETS ==="
-          find docs -name "*.html" -o -name "*.json" -o -name "*.css" -o -name "*.js" -o -name "*.png" | sort
+          # Make verification script executable
+          chmod +x .github/scripts/verify_structure.sh
 
-          echo ""
-          echo "=== versions.json content ==="
-          cat docs/versions.json
-
-          echo ""
-          echo "=== SHARED ASSETS VERIFICATION ==="
-          shared_assets=("styles.css" "scripts.js" "icon.png" ".nojekyll")
-
-          for asset in "${shared_assets[@]}"; do
-            if [ -f "docs/$asset" ]; then
-              echo "docs/$asset exists ($(wc -c < docs/$asset) bytes)"
-            else
-              echo "docs/$asset missing!"
-            fi
-          done
-
-          echo ""
-          echo "=== CRITICAL VERIFICATION CHECKS ==="
-
-          if [ -f "docs/index.html" ]; then
-            echo "Root index.html exists"
-            if grep -q "Auto-redirecting" docs/index.html && ! grep -q "redoc-container" docs/index.html; then
-              echo "Root index.html has CORRECT landing page template"
-            else
-              echo "Root index.html has WRONG template"
-            fi
-            
-            # Check shared asset links
-            if grep -q 'href="styles.css"' docs/index.html; then
-              echo "Root correctly uses shared CSS"
-            else
-              echo "Root missing shared CSS link"
-            fi
-          else
-            echo "Root index.html missing!"
-          fi
-
-          if [ -f "docs/versions.json" ]; then
-            echo "Root versions.json exists"
-          else
-            echo "Root versions.json missing!"
-          fi
-
-          # Check that each version has correct templates - FIXED REGEX
-          for version_dir in docs/*/; do
-            if [ -d "$version_dir" ]; then
-              version=$(basename "$version_dir")
-              # Use grep instead of regex for better compatibility
-              if echo "$version" | grep -E '^[0-9]+(\.[0-9]+)*$' >/dev/null || echo "$version" | grep '^test' >/dev/null; then
-                echo "Checking version: $version"
-                if [ -f "$version_dir/index.html" ]; then
-                  if grep -q "redoc-container" "$version_dir/index.html" && ! grep -q "Auto-redirecting" "$version_dir/index.html"; then
-                    echo "  $version/index.html has CORRECT Redoc template"
-                    
-                    # Check shared asset links
-                    if grep -q 'href="../styles.css"' "$version_dir/index.html"; then
-                      echo "  $version correctly uses shared CSS"
-                    else
-                      echo "  $version missing shared CSS link"
-                    fi
-                  else
-                    echo "  $version/index.html has WRONG template!"
-                    echo "  First 100 chars:"
-                    head -c 100 "$version_dir/index.html"
-                  fi
-                else
-                  echo "  $version/index.html missing!"
-                fi
-                if [ -f "$version_dir/versions.json" ]; then
-                  echo "  $version/versions.json exists"
-                else
-                  echo "  $version/versions.json missing!"
-                fi
-              fi
-            fi
-          done
+          # Run the structure verification script
+          .github/scripts/verify_structure.sh \
+              --docs-dir docs \
+              --verbose
 
       - name: Commit and push changes
         run: |
