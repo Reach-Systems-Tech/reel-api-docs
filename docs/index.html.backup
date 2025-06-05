@@ -10,7 +10,7 @@
     <div class="landing-container">
         <h1>ReelAPI v1 Documentation</h1>
         <div class="auto-redirect">
-            <p><strong>Auto-redirecting to latest version (test1) in 3 seconds...</strong></p>
+            <p><strong>Auto-redirecting to latest version (test2) in 3 seconds...</strong></p>
             <p><a href="test1/">Click here to go immediately</a></p>
         </div>
         <div class="features">
@@ -25,12 +25,13 @@
         </div>
         <h2>Available Versions</h2>
         <ul class="version-list">
-            <li><a href="test1/" class="latest">test1 (latest)</a></li>
+            <li><a href="test2/" class="latest">test2 (latest)</a></li>
+            <li><a href="test1/" >test1</a></li>
         </ul>
     </div>
     <script src="scripts.js"></script>
     <script>
-        setupAutoRedirect('test1');
+        setupAutoRedirect('test2');
     </script>
 </body>
 </html>
