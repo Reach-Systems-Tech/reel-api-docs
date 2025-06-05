@@ -203,21 +203,6 @@ verify_version_directory() {
         return 1
     fi
     
-    # Check versions.json
-    if [ -f "$version_dir/versions.json" ]; then
-        echo "  $version/versions.json exists"
-        
-        if [ "$verbose" = "true" ]; then
-            # Validate JSON format
-            if ! python3 -m json.tool "$version_dir/versions.json" >/dev/null 2>&1; then
-                echo "    WARNING: $version/versions.json contains invalid JSON"
-            fi
-        fi
-    else
-        echo "  ERROR: $version/versions.json missing!"
-        return 1
-    fi
-    
     # Check for OpenAPI spec
     if [ -f "$version_dir/openapi.json" ]; then
         echo "  $version/openapi.json exists"
