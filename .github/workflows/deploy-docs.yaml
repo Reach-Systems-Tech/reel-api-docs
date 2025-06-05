@@ -46,9 +46,9 @@ jobs:
           echo "Current shared assets:"
           for asset in styles.css scripts.js icon.png .nojekyll; do
             if [ -f "docs/$asset" ]; then
-              echo "  ✅ $asset exists ($(wc -c < docs/$asset) bytes)"
+              echo "  $asset exists ($(wc -c < docs/$asset) bytes)"
             else
-              echo "  ❌ $asset missing"
+              echo "  $asset missing"
             fi
           done
 
@@ -82,11 +82,11 @@ jobs:
 
           for asset in "${shared_assets[@]}"; do
             if [ -f "temp_extract/$asset" ]; then
-              echo "📄 Updating shared asset: $asset"
+              echo "Updating shared asset: $asset"
               cp "temp_extract/$asset" "docs/$asset"
-              echo "  ✅ Updated docs/$asset ($(wc -c < docs/$asset) bytes)"
+              echo "  Updated docs/$asset ($(wc -c < docs/$asset) bytes)"
             else
-              echo "  ⚠️  Shared asset $asset not found in archive"
+              echo "  Shared asset $asset not found in archive"
             fi
           done
 
@@ -106,9 +106,9 @@ jobs:
             cp -r temp_extract/$VERSION/* "docs/$VERSION/"
             
             # DO NOT COPY global files that would overwrite repo state!
-            echo "⚠️  Skipping archive versions.json to preserve repo state"
+            echo "Skipping archive versions.json to preserve repo state"
             
-            echo "✅ CORRECT extraction: Version-specific files to docs/$VERSION/"
+            echo "CORRECT extraction: Version-specific files to docs/$VERSION/"
             
           elif [ -d "temp_extract/docs/api/auto_docs" ]; then
             echo "Found nested docs/api/auto_docs structure - extracting correctly..."
@@ -118,7 +118,7 @@ jobs:
             
             for asset in "${shared_assets[@]}"; do
               if [ -f "$nested_path/$asset" ]; then
-                echo "📄 Updating shared asset from nested path: $asset"
+                echo "Updating shared asset from nested path: $asset"
                 cp "$nested_path/$asset" "docs/$asset"
               fi
             done
@@ -129,13 +129,13 @@ jobs:
               echo "Moving version-specific files from $nested_path/$VERSION/ to docs/$VERSION/"
               cp -r $nested_path/$VERSION/* "docs/$VERSION/"
             else
-              echo "❌ ERROR: Version directory not found in nested structure!"
+              echo "ERROR: Version directory not found in nested structure!"
               find temp_extract -type d -name "$VERSION"
               exit 1
             fi
             
           else
-            echo "❌ ERROR: Unrecognized archive structure!"
+            echo "ERROR: Unrecognized archive structure!"
             echo "Expected either:"
             echo "  - Flat structure with $VERSION/ directory and shared assets"
             echo "  - Nested docs/api/auto_docs/ structure"
@@ -148,7 +148,7 @@ jobs:
           # Copy tools if they exist
           if [ -d "temp_extract/_tools" ]; then
             cp -r temp_extract/_tools "docs/$VERSION/"
-            echo "📄 Copied _tools directory"
+            echo "Copied _tools directory"
           fi
 
           # Clean up temp directory
@@ -165,16 +165,16 @@ jobs:
           echo "Shared assets verification:"
           for asset in "${shared_assets[@]}"; do
             if [ -f "docs/$asset" ]; then
-              echo "  ✅ docs/$asset exists ($(wc -c < docs/$asset) bytes)"
+              echo "  docs/$asset exists ($(wc -c < docs/$asset) bytes)"
             else
-              echo "  ❌ docs/$asset missing!"
+              echo "  docs/$asset missing!"
             fi
           done
 
           # Verify key files exist in correct locations
           if [ -f "docs/$VERSION/index.html" ]; then
             echo ""
-            echo "✅ Version-specific index.html found at docs/$VERSION/index.html"
+            echo "Version-specific index.html found at docs/$VERSION/index.html"
             
             # Check file size - Redoc templates should be smaller now (shared assets)
             file_size=$(wc -c < "docs/$VERSION/index.html")
@@ -182,23 +182,23 @@ jobs:
             
             # Check template type
             if grep -q "redoc-container" "docs/$VERSION/index.html"; then
-              echo "✅ CORRECT: Version index.html contains Redoc template"
+              echo "CORRECT: Version index.html contains Redoc template"
               
               # Verify shared asset links
               if grep -q 'href="../styles.css"' "docs/$VERSION/index.html"; then
-                echo "✅ CORRECT: Version file links to shared CSS"
+                echo "CORRECT: Version file links to shared CSS"
               else
-                echo "❌ ERROR: Version file missing shared CSS link"
+                echo "ERROR: Version file missing shared CSS link"
               fi
               
               if grep -q 'src="../scripts.js"' "docs/$VERSION/index.html"; then
-                echo "✅ CORRECT: Version file links to shared JS"
+                echo "CORRECT: Version file links to shared JS"
               else
-                echo "❌ ERROR: Version file missing shared JS link"
+                echo "ERROR: Version file missing shared JS link"
               fi
               
             else
-              echo "❌ ERROR: Version index.html does not contain Redoc template"
+              echo "ERROR: Version index.html does not contain Redoc template"
               echo "First 200 chars of version index.html:"
               head -c 200 "docs/$VERSION/index.html"
               
@@ -210,23 +210,23 @@ jobs:
               if grep -q "Auto-redirecting" "docs/$VERSION/index.html"; then
                 echo "YES - This is the WRONG template (landing page)!"
                 echo ""
-                echo "❌ EXTRACTION FAILED: Landing page template copied to version location"
+                echo "EXTRACTION FAILED: Landing page template copied to version location"
                 exit 1
               else
                 echo "NO - Unknown template type"
               fi
             fi
           else
-            echo "❌ ERROR: Version-specific index.html missing at docs/$VERSION/index.html"
+            echo "ERROR: Version-specific index.html missing at docs/$VERSION/index.html"
             echo "Available files:"
             ls -la "docs/$VERSION/"
             exit 1
           fi
 
           if [ -f "docs/$VERSION/_tools/doc_updater.py" ]; then
-            echo "✅ Documentation updater tool found"
+            echo "Documentation updater tool found"
           else
-            echo "❌ Documentation updater tool missing!"
+            echo "Documentation updater tool missing!"
             echo "Available files in version directory:"
             find "docs/$VERSION" -name "*.py" || echo "No Python files found"
           fi
@@ -238,68 +238,21 @@ jobs:
           echo "=== UPDATING VERSIONS.JSON ==="
           echo "New version to add: $VERSION"
 
-          # Debug: Show current versions.json if it exists
+          # Show current state
           if [ -f "docs/versions.json" ]; then
-            echo "Current versions.json content (from repo):"
-            cat docs/versions.json
+          echo "Current versions.json content:"
+          cat docs/versions.json
           else
-            echo "No existing versions.json found - creating new one"
-            mkdir -p docs
-            echo '[]' > docs/versions.json
+          echo "No existing versions.json found"
+          mkdir -p docs
+          echo '[]' > docs/versions.json
           fi
 
-          # Update versions list with Python for proper semantic sorting
-          python3 << 'EOF'
-          import json
-          import re
-          import os
-
-          version = "${{ github.event.client_payload.version }}"
-          print(f"Adding version: {version}")
-
-          # Read existing versions from the repo (not from archive)
-          try:
-              if os.path.exists('docs/versions.json'):
-                  with open('docs/versions.json', 'r') as f:
-                      versions = json.load(f)
-                      print(f"Loaded existing versions: {versions}")
-              else:
-                  versions = []
-                  print("No existing versions found")
-          except Exception as e:
-              print(f"Error reading versions.json: {e}")
-              versions = []
-
-          # Add new version if not already present
-          if version not in versions:
-              versions.append(version)
-              print(f"Added new version. Updated list: {versions}")
-          else:
-              print(f"Version {version} already exists in list")
-              
-          # Sort versions by semantic version (newest first)
-          def version_key(v):
-              match = re.match(r'^(\d+)(?:\.(\d+))?(?:\.(\d+))?', v)
-              if match:
-                  parts = match.groups()
-                  return tuple(int(p) if p else 0 for p in parts)
-              return (0, 0, 0, v)
-
-          versions.sort(key=version_key, reverse=True)
-          print(f"Final sorted versions: {versions}")
-
-          # Save updated versions
-          with open('docs/versions.json', 'w') as f:
-              json.dump(versions, f, indent=2)
-
-          print(f"Updated versions.json with: {versions}")
-
-          # Store latest version for later use
-          if versions:
-              with open('latest_version.txt', 'w') as f:
-                  f.write(versions[0])
-              print(f"Latest version set to: {versions[0]}")
-          EOF
+          # Run the version manager script
+          python3 .github/scripts/version_manager.py \
+          --docs-dir docs \
+          --version "$VERSION" \
+          --output-latest latest_version.txt
 
           echo ""
           echo "=== FINAL VERSIONS.JSON CONTENT ==="
@@ -312,21 +265,21 @@ jobs:
           # Check if we have the tool available
           if [ -f "docs/$VERSION/_tools/doc_updater.py" ]; then
             echo "Running documentation updater to update ONLY version dropdowns..."
-            echo "⚠️  IMPORTANT: This should ONLY update dropdowns, NOT recreate entire files"
+            echo "IMPORTANT: This should ONLY update dropdowns, NOT recreate entire files"
             
             # CRITICAL: Verify the version file has correct template BEFORE running updater
             if [ -f "docs/$VERSION/index.html" ]; then
               if grep -q "redoc-container" "docs/$VERSION/index.html"; then
-                echo "✅ PRE-UPDATE: Version file has correct Redoc template"
+                echo "PRE-UPDATE: Version file has correct Redoc template"
                 
                 # Also verify shared asset links
                 if grep -q 'href="../styles.css"' "docs/$VERSION/index.html"; then
-                  echo "✅ PRE-UPDATE: Version file correctly links to shared CSS"
+                  echo "PRE-UPDATE: Version file correctly links to shared CSS"
                 else
-                  echo "⚠️  PRE-UPDATE: Version file missing shared CSS link"
+                  echo "PRE-UPDATE: Version file missing shared CSS link"
                 fi
               else
-                echo "❌ PRE-UPDATE: Version file has WRONG template - stopping here!"
+                echo "PRE-UPDATE: Version file has WRONG template - stopping here!"
                 echo "Content preview:"
                 head -n 20 "docs/$VERSION/index.html"
                 exit 1
@@ -338,16 +291,16 @@ jobs:
             # CRITICAL: Verify the version file STILL has correct template AFTER running updater  
             if [ -f "docs/$VERSION/index.html" ]; then
               if grep -q "redoc-container" "docs/$VERSION/index.html"; then
-                echo "✅ POST-UPDATE: Version file still has correct Redoc template"
+                echo "POST-UPDATE: Version file still has correct Redoc template"
                 
                 # Verify shared asset links are preserved
                 if grep -q 'href="../styles.css"' "docs/$VERSION/index.html"; then
-                  echo "✅ POST-UPDATE: Shared CSS link preserved"
+                  echo "POST-UPDATE: Shared CSS link preserved"
                 else
-                  echo "❌ POST-UPDATE: Shared CSS link was lost!"
+                  echo "POST-UPDATE: Shared CSS link was lost!"
                 fi
               else
-                echo "❌ POST-UPDATE: doc_updater.py CORRUPTED the version file!"
+                echo "POST-UPDATE: doc_updater.py CORRUPTED the version file!"
                 echo "This confirms doc_updater.py is overwriting templates instead of just updating dropdowns"
                 exit 1
               fi
@@ -419,19 +372,19 @@ jobs:
               echo '</html>'
             } > docs/index.html
             
-            echo "✅ Created root index.html with landing page template and shared assets"
+            echo "Created root index.html with landing page template and shared assets"
             
             # Verify shared asset links
             if grep -q 'href="styles.css"' docs/index.html; then
-              echo "✅ Root correctly links to shared CSS"
+              echo "Root correctly links to shared CSS"
             else
-              echo "❌ Root missing shared CSS link"
+              echo "Root missing shared CSS link"
             fi
             
             if grep -q 'src="scripts.js"' docs/index.html; then
-              echo "✅ Root correctly links to shared JS"
+              echo "Root correctly links to shared JS"
             else
-              echo "❌ Root missing shared JS link"
+              echo "Root missing shared JS link"
             fi
             
           else
@@ -439,9 +392,9 @@ jobs:
             
             # Verify existing root has correct shared asset links
             if grep -q 'href="styles.css"' docs/index.html; then
-              echo "✅ Existing root correctly links to shared CSS"
+              echo "Existing root correctly links to shared CSS"
             else
-              echo "⚠️  Existing root may need shared CSS link update"
+              echo "Existing root may need shared CSS link update"
             fi
           fi
 
@@ -467,9 +420,9 @@ jobs:
 
           for asset in "${shared_assets[@]}"; do
             if [ -f "docs/$asset" ]; then
-              echo "✅ docs/$asset exists ($(wc -c < docs/$asset) bytes)"
+              echo "docs/$asset exists ($(wc -c < docs/$asset) bytes)"
             else
-              echo "❌ docs/$asset missing!"
+              echo "docs/$asset missing!"
             fi
           done
 
@@ -477,27 +430,27 @@ jobs:
           echo "=== CRITICAL VERIFICATION CHECKS ==="
 
           if [ -f "docs/index.html" ]; then
-            echo "✅ Root index.html exists"
+            echo "Root index.html exists"
             if grep -q "Auto-redirecting" docs/index.html && ! grep -q "redoc-container" docs/index.html; then
-              echo "✅ Root index.html has CORRECT landing page template"
+              echo "Root index.html has CORRECT landing page template"
             else
-              echo "❌ Root index.html has WRONG template"
+              echo "Root index.html has WRONG template"
             fi
             
             # Check shared asset links
             if grep -q 'href="styles.css"' docs/index.html; then
-              echo "✅ Root correctly uses shared CSS"
+              echo "Root correctly uses shared CSS"
             else
-              echo "❌ Root missing shared CSS link"
+              echo "Root missing shared CSS link"
             fi
           else
-            echo "❌ Root index.html missing!"
+            echo "Root index.html missing!"
           fi
 
           if [ -f "docs/versions.json" ]; then
-            echo "✅ Root versions.json exists"
+            echo "Root versions.json exists"
           else
-            echo "❌ Root versions.json missing!"
+            echo "Root versions.json missing!"
           fi
 
           # Check that each version has correct templates - FIXED REGEX
@@ -509,26 +462,26 @@ jobs:
                 echo "Checking version: $version"
                 if [ -f "$version_dir/index.html" ]; then
                   if grep -q "redoc-container" "$version_dir/index.html" && ! grep -q "Auto-redirecting" "$version_dir/index.html"; then
-                    echo "  ✅ $version/index.html has CORRECT Redoc template"
+                    echo "  $version/index.html has CORRECT Redoc template"
                     
                     # Check shared asset links
                     if grep -q 'href="../styles.css"' "$version_dir/index.html"; then
-                      echo "  ✅ $version correctly uses shared CSS"
+                      echo "  $version correctly uses shared CSS"
                     else
-                      echo "  ❌ $version missing shared CSS link"
+                      echo "  $version missing shared CSS link"
                     fi
                   else
-                    echo "  ❌ $version/index.html has WRONG template!"
+                    echo "  $version/index.html has WRONG template!"
                     echo "  First 100 chars:"
                     head -c 100 "$version_dir/index.html"
                   fi
                 else
-                  echo "  ❌ $version/index.html missing!"
+                  echo "  $version/index.html missing!"
                 fi
                 if [ -f "$version_dir/versions.json" ]; then
-                  echo "  ✅ $version/versions.json exists"
+                  echo "  $version/versions.json exists"
                 else
-                  echo "  ❌ $version/versions.json missing!"
+                  echo "  $version/versions.json missing!"
                 fi
               fi
             fi
@@ -569,7 +522,7 @@ jobs:
             echo "   - Root: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/"
             echo "   - Version $VERSION: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/$VERSION/"
             echo ""
-            echo "🎨 Shared Assets Features:"
+            echo "Shared Assets Features:"
             echo "   - All pages use shared styles.css for consistent styling"
             echo "   - All pages use shared scripts.js for version switching"
             echo "   - All pages use shared icon.png for branding"
