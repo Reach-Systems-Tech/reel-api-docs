@@ -99,7 +99,7 @@ create_landing_page_html() {
         <h1>$api_title Documentation</h1>
         
         <div class="auto-redirect">
-            <p><strong>Auto-redirecting to latest version ($latest_version) in 10 seconds...</strong></p>
+            <p><strong>Auto-redirecting to latest version ($latest_version) in 30 seconds...</strong></p>
             <p><a href="$latest_version/">Click here to go immediately</a></p>
         </div>
         
