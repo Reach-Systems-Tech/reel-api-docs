@@ -128,7 +128,7 @@ function populateVersionDropdown(versions, currentVersion) {
 }
 
 // Auto-redirect functionality for landing page
-function setupAutoRedirect(targetVersion, delay = 10000) {
+function setupAutoRedirect(targetVersion, delay = 30000) {
     setTimeout(() => {
         window.location.href = targetVersion + '/';
     }, delay);
