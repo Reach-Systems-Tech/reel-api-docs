@@ -18,6 +18,7 @@
             </div>
             <select class="version-selector" id="version-select" onchange="switchVersion(this.value, 'test1')">
                 <option value="test1" selected>test1</option>
+                <option value="draft1" >draft1</option>
             </select>
         </div>
     </div>
