@@ -17,7 +17,6 @@
                 Static Documentation Mode
             </div>
             <select class="version-selector" id="version-select" onchange="switchVersion(this.value, 'draft1')">
-                <option value="test1" >test1</option>
                 <option value="draft1" selected>draft1</option>
             </select>
         </div>
