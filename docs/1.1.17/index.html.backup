@@ -18,6 +18,9 @@
             </div>
             <select class="version-selector" id="version-select" onchange="switchVersion(this.value, '1.1.17')">
                 <option value="1.1.17" selected>1.1.17</option>
+                <option value="1.1.16" >1.1.16</option>
+                <option value="1.1.15" >1.1.15</option>
+                <option value="1.1.14" >1.1.14</option>
             </select>
         </div>
     </div>
