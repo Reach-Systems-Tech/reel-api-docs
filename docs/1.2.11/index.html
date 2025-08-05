@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ReelAPI v1 - 1.2.6</title>
+    <title>ReelAPI v1 - 1.2.11</title>
     <link rel="stylesheet" href="../styles.css">
 </head>
 <body>
@@ -16,13 +16,13 @@
             <div class="documentation-notice">
                 Static Documentation Mode
             </div>
-            <select class="version-selector" id="version-select" onchange="switchVersion(this.value, '1.2.6')">
-                <option value="1.2.11" >1.2.11</option>
+            <select class="version-selector" id="version-select" onchange="switchVersion(this.value, '1.2.11')">
+                <option value="1.2.11" selected>1.2.11</option>
                 <option value="1.2.10" >1.2.10</option>
                 <option value="1.2.9" >1.2.9</option>
                 <option value="1.2.8" >1.2.8</option>
                 <option value="1.2.7" >1.2.7</option>
-                <option value="1.2.6" selected>1.2.6</option>
+                <option value="1.2.6" >1.2.6</option>
                 <option value="1.2.5" >1.2.5</option>
                 <option value="1.2.4" >1.2.4</option>
                 <option value="1.2.3" >1.2.3</option>
@@ -50,7 +50,7 @@
         // Initialize Redoc
         window.onload = function() {
             // Load versions for dropdown
-            loadVersions('1.2.6', populateVersionDropdown);
+            loadVersions('1.2.11', populateVersionDropdown);
             
             // Initialize Redoc
             Redoc.init('./openapi.json', {

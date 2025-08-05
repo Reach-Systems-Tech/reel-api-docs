@@ -17,6 +17,7 @@
                 Static Documentation Mode
             </div>
             <select class="version-selector" id="version-select" onchange="switchVersion(this.value, '1.1.18')">
+                <option value="1.2.10" >1.2.10</option>
                 <option value="1.2.9" >1.2.9</option>
                 <option value="1.2.8" >1.2.8</option>
                 <option value="1.2.7" >1.2.7</option>
