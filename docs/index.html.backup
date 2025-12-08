@@ -13,7 +13,7 @@
         <h1>ReelAPI v1 Documentation</h1>
 
         <div class="auto-redirect">
-            <p><strong>Auto-redirecting to latest version (1.3.10) in 30 seconds...</strong></p>
+            <p><strong>Auto-redirecting to latest version (1.3.11) in 30 seconds...</strong></p>
             <p><a href="draft1/">Click here to go immediately</a></p>
         </div>
 
@@ -30,7 +30,8 @@
 
         <h2>Available Versions</h2>
         <ul class="version-list">
-            <li><a href="1.3.10/" class="latest">1.3.10 (latest)</a></li>
+            <li><a href="1.3.11/" class="latest">1.3.11 (latest)</a></li>
+            <li><a href="1.3.10/" >1.3.10</a></li>
             <li><a href="1.3.9/" >1.3.9</a></li>
             <li><a href="1.3.8/" >1.3.8</a></li>
             <li><a href="1.3.5/" >1.3.5</a></li>
@@ -66,7 +67,7 @@
 
     <script src="scripts.js"></script>
     <script>
-        setupAutoRedirect('1.3.10');
+        setupAutoRedirect('1.3.11');
     </script>
 </body>
 
