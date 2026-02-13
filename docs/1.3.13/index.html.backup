@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ReelAPI v1 - 1.2.5</title>
+    <title>ReelAPI v1 - 1.3.13</title>
     <link rel="stylesheet" href="../styles.css">
 </head>
 <body>
@@ -16,41 +16,8 @@
             <div class="documentation-notice">
                 Static Documentation Mode
             </div>
-            <select class="version-selector" id="version-select" onchange="switchVersion(this.value, '1.2.5')">
-                <option value="1.3.13" >1.3.13</option>
-                <option value="1.3.12" >1.3.12</option>
-                <option value="1.3.11" >1.3.11</option>
-                <option value="1.3.10" >1.3.10</option>
-                <option value="1.3.9" >1.3.9</option>
-                <option value="1.3.8" >1.3.8</option>
-                <option value="1.3.5" >1.3.5</option>
-                <option value="1.3.4" >1.3.4</option>
-                <option value="1.3.3" >1.3.3</option>
-                <option value="1.3.2" >1.3.2</option>
-                <option value="1.3.1" >1.3.1</option>
-                <option value="1.3.0" >1.3.0</option>
-                <option value="1.2.12" >1.2.12</option>
-                <option value="1.2.11" >1.2.11</option>
-                <option value="1.2.10" >1.2.10</option>
-                <option value="1.2.9" >1.2.9</option>
-                <option value="1.2.8" >1.2.8</option>
-                <option value="1.2.7" >1.2.7</option>
-                <option value="1.2.6" >1.2.6</option>
-                <option value="1.2.5" selected>1.2.5</option>
-                <option value="1.2.4" >1.2.4</option>
-                <option value="1.2.3" >1.2.3</option>
-                <option value="1.2.2" >1.2.2</option>
-                <option value="1.2.1" >1.2.1</option>
-                <option value="1.2.0" >1.2.0</option>
-                <option value="1.1.22" >1.1.22</option>
-                <option value="1.1.21" >1.1.21</option>
-                <option value="1.1.20" >1.1.20</option>
-                <option value="1.1.19" >1.1.19</option>
-                <option value="1.1.18" >1.1.18</option>
-                <option value="1.1.17" >1.1.17</option>
-                <option value="1.1.16" >1.1.16</option>
-                <option value="1.1.15" >1.1.15</option>
-                <option value="1.1.14" >1.1.14</option>
+            <select class="version-selector" id="version-select" onchange="switchVersion(this.value, '1.3.13')">
+                <option value="1.3.13" selected>1.3.13</option>
             </select>
         </div>
     </div>
@@ -63,7 +30,7 @@
         // Initialize Redoc
         window.onload = function() {
             // Load versions for dropdown
-            loadVersions('1.2.5', populateVersionDropdown);
+            loadVersions('1.3.13', populateVersionDropdown);
             
             // Initialize Redoc
             Redoc.init('./openapi.json', {
