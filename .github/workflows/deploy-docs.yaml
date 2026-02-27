@@ -3,227 +3,81 @@ name: Deploy Documentation
 on:
   repository_dispatch:
     types: [deploy-docs]
-  push:
-    paths:
-      - "docs/**"
   workflow_dispatch:
+    inputs:
+      version:
+        description: "API version (e.g. 1.3.15)"
+        required: true
+      openapi_url:
+        description: "Direct URL to openapi.json (or a tarball URL if you prefer)"
+        required: true
 
 permissions:
   contents: write
 
 jobs:
   update-docs:
-    if: github.event_name == 'repository_dispatch'
+    # Only run automatically on dispatch; workflow_dispatch is manual testing
+    if: github.event_name == 'repository_dispatch' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout and prepare repo state
+      - name: Checkout
         uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
-      - name: Ensure latest repo state
+      - name: Resolve inputs
+        id: vars
+        shell: bash
         run: |
-          echo "=== ENSURING LATEST REPO STATE ==="
-          git checkout main
-          git pull origin main || echo "Nothing to pull"
-
-          # Show current state
-          echo "Current versions.json (if exists):"
-          if [ -f "docs/versions.json" ]; then
-            cat docs/versions.json
+          if [ "${{ github.event_name }}" = "repository_dispatch" ]; then
+            echo "version=${{ github.event.client_payload.version }}" >> $GITHUB_OUTPUT
+            echo "openapi_url=${{ github.event.client_payload.openapi_url }}" >> $GITHUB_OUTPUT
           else
-            echo "No versions.json found"
+            echo "version=${{ inputs.version }}" >> $GITHUB_OUTPUT
+            echo "openapi_url=${{ inputs.openapi_url }}" >> $GITHUB_OUTPUT
           fi
 
-          echo "Current docs structure:"
-          ls -la docs/ 2>/dev/null || echo "No docs directory yet"
-
-          echo "Current shared assets:"
-          for asset in styles.css scripts.js icon.png .nojekyll; do
-            if [ -f "docs/$asset" ]; then
-              echo "  $asset exists ($(wc -c < docs/$asset) bytes)"
-            else
-              echo "  $asset missing"
-            fi
-          done
-
-      - name: Download and extract documentation with shared assets
+      - name: Download openapi.json
+        shell: bash
         run: |
-          VERSION="${{ github.event.client_payload.version }}"
-          DOWNLOAD_URL="${{ github.event.client_payload.download_url }}"
-          USES_SHARED_ASSETS="${{ github.event.client_payload.uses_shared_assets }}"
+          VERSION="${{ steps.vars.outputs.version }}"
+          OPENAPI_URL="${{ steps.vars.outputs.openapi_url }}"
 
-          # Make extraction script executable
-          chmod +x .github/scripts/extract_docs.sh
+          mkdir -p "docs/$VERSION"
 
-          # Run the extraction script
-          .github/scripts/extract_docs.sh \
-            --version "$VERSION" \
-            --download-url "$DOWNLOAD_URL" \
-            $([ "$USES_SHARED_ASSETS" = "true" ] && echo "--uses-shared-assets")
+          # -L to follow redirects (GitHub release download URLs redirect)
+          curl -fsSL -L "$OPENAPI_URL" -o "docs/$VERSION/openapi.json"
 
-          # Clean up archive file
-          rm -f docs.tar.gz
+          python -m json.tool "docs/$VERSION/openapi.json" >/dev/null
 
-      - name: Update versions.json with semantic sorting
+      - name: Generate Scalar HTML (version + landing)
         run: |
-          VERSION="${{ github.event.client_payload.version }}"
+          python3 .github/scripts/generate_scalar_docs.py \
+            --docs-dir docs \
+            --version "${{ steps.vars.outputs.version }}" \
+            --title "ReelAPI v1"
 
-          echo "=== UPDATING VERSIONS.JSON ==="
-          echo "New version to add: $VERSION"
-
-          # Show current state
-          if [ -f "docs/versions.json" ]; then
-            echo "Current versions.json content:"
-            cat docs/versions.json
-          else
-            echo "No existing versions.json found"
-            mkdir -p docs
-            echo '[]' > docs/versions.json
-          fi
-
-          # Run the version manager script
+      - name: Update versions.json
+        run: |
           python3 .github/scripts/version_manager.py \
             --docs-dir docs \
-            --version "$VERSION" \
-            --output-latest latest_version.txt
+            --version "${{ steps.vars.outputs.version }}"
 
-          echo ""
-          echo "=== FINAL VERSIONS.JSON CONTENT ==="
-          cat docs/versions.json
-
-      - name: Run documentation updater (ONLY for dropdowns)
+      - name: Commit and push
+        shell: bash
         run: |
-          VERSION="${{ github.event.client_payload.version }}"
-
-          # Check if we have the tool available
-          if [ -f "docs/$VERSION/_tools/doc_updater.py" ]; then
-            echo "Running documentation updater to update ONLY version dropdowns..."
-            echo "IMPORTANT: This should ONLY update dropdowns, NOT recreate entire files"
-            
-            # CRITICAL: Verify the version file has correct template BEFORE running updater
-            if [ -f "docs/$VERSION/index.html" ]; then
-              if grep -q "redoc-container" "docs/$VERSION/index.html"; then
-                echo "PRE-UPDATE: Version file has correct Redoc template"
-                
-                # Also verify shared asset links
-                if grep -q 'href="../styles.css"' "docs/$VERSION/index.html"; then
-                  echo "PRE-UPDATE: Version file correctly links to shared CSS"
-                else
-                  echo "PRE-UPDATE: Version file missing shared CSS link"
-                fi
-              else
-                echo "PRE-UPDATE: Version file has WRONG template - stopping here!"
-                echo "Content preview:"
-                head -n 20 "docs/$VERSION/index.html"
-                exit 1
-              fi
-            fi
-            
-            python3 "docs/$VERSION/_tools/doc_updater.py" --docs-dir docs
-            
-            # CRITICAL: Verify the version file STILL has correct template AFTER running updater  
-            if [ -f "docs/$VERSION/index.html" ]; then
-              if grep -q "redoc-container" "docs/$VERSION/index.html"; then
-                echo "POST-UPDATE: Version file still has correct Redoc template"
-                
-                # Verify shared asset links are preserved
-                if grep -q 'href="../styles.css"' "docs/$VERSION/index.html"; then
-                  echo "POST-UPDATE: Shared CSS link preserved"
-                else
-                  echo "POST-UPDATE: Shared CSS link was lost!"
-                fi
-              else
-                echo "POST-UPDATE: doc_updater.py CORRUPTED the version file!"
-                echo "This confirms doc_updater.py is overwriting templates instead of just updating dropdowns"
-                exit 1
-              fi
-            fi
-            
-            echo "Documentation updater completed successfully"
-          else
-            echo "Documentation updater not found, skipping dynamic updates"
-            echo "Files will still be deployed but version navigation may be limited"
-          fi
-
-      - name: Create root index.html ONLY if missing
-        run: |
-          # Get the latest version from previous step
-          LATEST_VERSION=$(cat latest_version.txt 2>/dev/null || echo "unknown")
-
-          # Make landing page script executable
-          chmod +x .github/scripts/create_landing_page.sh
-
-          # Run the landing page creation script
-          .github/scripts/create_landing_page.sh \
-              --latest-version "$LATEST_VERSION"
-
-      - name: Clean up tool files from docs
-        run: |
-          # Remove _tools directories from final documentation
-          # (they were only needed for the updater script)
-          find docs -name "_tools" -type d -exec rm -rf {} + 2>/dev/null || true
-          echo "Cleaned up temporary tool files"
-
-      - name: Final structure verification
-        run: |
-          # Make verification script executable
-          chmod +x .github/scripts/verify_structure.sh
-
-          # Run the structure verification script
-          .github/scripts/verify_structure.sh \
-              --docs-dir docs \
-              --verbose
-
-      - name: Commit and push changes
-        run: |
-          VERSION="${{ github.event.client_payload.version }}"
-
-          git config --local user.email "action@github.com"
-          git config --local user.name "Documentation Bot"
-
-          # Ensure we're on main branch
-          git checkout main
+          VERSION="${{ steps.vars.outputs.version }}"
+          git config user.email "action@github.com"
+          git config user.name "Documentation Bot"
 
           git add docs/
           if ! git diff --cached --quiet; then
-            git commit -m "Auto-update documentation for version $VERSION (with shared assets)
-
-          - Added/updated version $VERSION documentation  
-          - Updated shared CSS and JavaScript assets
-          - Updated all version dropdowns and navigation
-          - Synchronized versions.json across all directories
-          - Updated root index.html with latest version list
-          - All pages now use shared assets for easier maintenance
-
-          Shared Assets Benefits:
-          - Consistent styling across all versions
-          - Easy CSS/JS updates (edit once, affects all)
-          - Better performance with asset caching
-          - Smaller total repository size"
-            
-            git push origin main
-            echo "Documentation committed and pushed to main branch"
-            echo "GitHub Pages will automatically deploy from /docs folder"
-            echo ""
-            echo "Documentation will be available at:"
-            echo "   - Root: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/"
-            echo "   - Version $VERSION: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/$VERSION/"
-            echo ""
-            echo "Shared Assets Features:"
-            echo "   - All pages use shared styles.css for consistent styling"
-            echo "   - All pages use shared scripts.js for version switching"
-            echo "   - All pages use shared icon.png for branding"
-            echo "   - Easy maintenance: edit assets once, affects all versions"
+            git commit -m "Docs: publish Scalar for $VERSION"
+            git push
           else
             echo "No changes to commit"
           fi
-
-      - name: Clean up temporary files
-        run: |
-          rm -f docs.tar.gz latest_version.txt
