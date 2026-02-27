@@ -30,35 +30,10 @@ This repository is part of the **automated documentation deployment pipeline** a
 - **Shared Assets** - Uses centralized CSS, JavaScript, and branding assets
 - **Automated Deployment** - Receives updates from the private development repository
 
-### Workflow Integration
+### Workflow
 
 - **Source Repository** - [`Reach-Systems-Tech/p017_reach_web_portal_v2`](https://github.com/Reach-Systems-Tech/p017_reach_web_portal_v2) (private)
 - **Documentation Generation** - Triggered by version tags in the private repo
-- **Deployment Process** - Automated via GitHub Actions workflows
-- **Asset Management** - Shared CSS/JS assets for consistent styling across versions
-
-### Key Components
-
-- **GitHub Pages** - Hosts documentation at `https://reach-systems-tech.github.io/reel-api-docs/`
-- **Workflow Scripts** - Located in `.github/scripts/` for maintainability
-- **Shared Assets** - `docs/styles.css`, `docs/scripts.js`, `docs/icon.png`
-- **Version Control** - `docs/versions.json` manages available documentation versions
-
-### Development Workflow
-
-1. **Private Repository** - API development and documentation generation
-2. **Version Tagging** - Triggers documentation build in private repo
-3. **Archive Creation** - Documentation packaged and uploaded as GitHub release
-4. **Repository Dispatch** - Triggers deployment workflow in this repository
-5. **Asset Extraction** - Shared assets and version-specific files extracted
-6. **GitHub Pages** - Updated documentation deployed automatically
-
-### Maintenance
-
-- **Workflow Files** - Located in `.github/workflows/deploy-docs.yml`
-- **Helper Scripts** - Modular scripts in `.github/scripts/` for maintainability
-- **Asset Updates** - Shared assets updated with each deployment
-- **Version Sync** - All documentation versions kept in sync automatically
 
 ### File Structure
 
@@ -71,7 +46,7 @@ docs/
 ├── index.html          # Landing page with version list
 ├── versions.json       # Master list of available versions
 ├── {version}/          # Version-specific documentation
-│   ├── index.html      # Redoc documentation page
+│   ├── index.html      # Scalar documentation page
 │   ├── openapi.json    # OpenAPI specification
 │   └── versions.json   # Copy of master versions list
 ```
