@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReelAPI v1 Documentation</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body class="has-header landing-page">
+    <div class="reach-header">
+        <div class="reach-header-left">
+            <img src="icon.png" alt="Reach Systems" class="reach-header-logo" onerror="this.style.display='none'">
+            <div class="reach-header-title">ReelAPI v1 Documentation</div>
+        </div>
+    </div>
+
+    <div class="landing-container">
+        <h1>ReelAPI v1 Documentation</h1>
+        <p class="subtitle">Cable Reel Control System API Reference</p>
+
+        <div class="auto-redirect" id="redirect-banner">
+            Loading latest version...
+        </div>
+
+        <h2>Available Versions</h2>
+        <ul class="version-list" id="version-list">
+            <li class="loading">Loading versions...</li>
+        </ul>
+    </div>
+
+    <script src="scripts.js"></script>
+    <script>
+        setupLandingPage();
+    </script>
+</body>
+
+</html>

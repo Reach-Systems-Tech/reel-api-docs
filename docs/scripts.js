@@ -1,135 +1,111 @@
-// Shared JavaScript for Reach Systems API Documentation
+/* Shared JavaScript for Reach Systems API Documentation */
 
-// Common version switching function
-function switchVersion(version, currentVersion) {
-    if (version === currentVersion) return;
-    
-    // Get the current path and extract the base documentation path
-    const currentPath = window.location.pathname;
-    
-    // Smart path detection for different deployment scenarios
-    let basePath;
-    
-    // Check if we're in a GitHub Pages environment
-    const isGitHubPages = window.location.hostname.includes('github.io');
-    
-    if (isGitHubPages) {
-        // GitHub Pages: /repo-name/version/ format
-        const pathParts = currentPath.split('/').filter(p => p);
-        
-        // Find the current version directory
-        const currentVersionIndex = pathParts.findIndex(part => 
-            /^(test\d*|\d+(\.\d+)*)$/.test(part) || part === 'latest'
-        );
-        
-        if (currentVersionIndex >= 0) {
-            // Keep everything up to (but not including) the current version directory
-            const basePathParts = pathParts.slice(0, currentVersionIndex);
-            basePath = '/' + basePathParts.join('/');
-            if (basePath !== '/') basePath += '/';
-        } else {
-            // Fallback: assume we're at repo root
-            basePath = '/' + (pathParts[0] || '') + '/';
-        }
-    } else {
-        // Local or custom domain deployment
-        if (currentPath.includes('/docs/')) {
-            // Extract base path up to /docs/
-            basePath = currentPath.substring(0, currentPath.indexOf('/docs/') + 6);
-        } else {
-            // Simple case: find and replace current version
-            const pathParts = currentPath.split('/').filter(p => p);
-            const currentVersionIndex = pathParts.findIndex(part => 
-                /^(test\d*|\d+(\.\d+)*)$/.test(part)
-            );
-            
-            if (currentVersionIndex >= 0) {
-                const basePathParts = pathParts.slice(0, currentVersionIndex);
-                basePath = '/' + basePathParts.join('/');
-                if (basePath !== '/') basePath += '/';
-            } else {
-                basePath = '/';
-            }
-        }
-    }
-    
-    // Construct the new path
-    const newPath = basePath + version + '/';
-    
-    console.log('Switching from', currentPath, 'to', newPath);
-    window.location.href = newPath;
-}
-
-function loadVersions(currentVersion, populateCallback) {
-    console.log('Loading versions for current version:', currentVersion);
-    
-    const versionsPaths = [
-        '../versions.json',     // For version subdirectories (primary)
-        './versions.json',      // For root pages
-        '/versions.json',       // Absolute fallback
-    ];
-    
-    function tryLoadVersions(pathIndex = 0) {
-        if (pathIndex >= versionsPaths.length) {
-            console.error('Could not load versions.json from any path');
-            console.log('Tried paths:', versionsPaths);
-            if (populateCallback) {
-                console.log('Using fallback: single version dropdown');
-                populateCallback([currentVersion], currentVersion);
-            }
-            return;
-        }
-        
-        const path = versionsPaths[pathIndex];
-        console.log(`Trying to load versions from: ${path}`);
-        
-        fetch(path)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                }
-                return response.json();
-            })
-            .then(versions => {
-                console.log('Successfully loaded versions from', path, ':', versions);
-                if (populateCallback) {
-                    populateCallback(versions, currentVersion);
-                }
-            })
-            .catch(error => {
-                console.log(`Failed to load from ${path}:`, error.message);
-                // Try next path
-                tryLoadVersions(pathIndex + 1);
-            });
-    }
-    
-    // Start trying paths
-    tryLoadVersions();
-}
-
-// Populate version dropdown for Redoc pages
-function populateVersionDropdown(versions, currentVersion) {
-    const select = document.getElementById('version-select');
+/**
+ * Populate the version dropdown and wire up version switching.
+ * Called once versions.json is loaded.
+ */
+function populateVersions(versions, currentVersion) {
+    var select = document.getElementById('version-select');
     if (!select) return;
-    
-    // Clear existing options
+
     select.innerHTML = '';
-    
-    // Add all versions
-    versions.forEach(v => {
-        const option = document.createElement('option');
-        option.value = v;
-        option.textContent = v;
-        if (v === currentVersion) {
-            option.selected = true;
-        }
-        select.appendChild(option);
+    versions.forEach(function (v) {
+        var opt = document.createElement('option');
+        opt.value = v;
+        opt.textContent = v;
+        if (v === currentVersion) opt.selected = true;
+        select.appendChild(opt);
     });
 }
 
-// Auto-redirect functionality for landing page
-function setupAutoRedirect(targetVersion, delay = 30000) {
-    setTimeout(() => {
-        window.location.href = targetVersion + '/';
-    }, delay);
+/**
+ * Navigate to a different version's docs.
+ * Uses simple relative navigation: up one level, into the new version folder.
+ */
+function switchVersion(newVersion, currentVersion) {
+    if (newVersion === currentVersion) return;
+    window.location.href = '../' + newVersion + '/';
+}
+
+/**
+ * Load versions.json and populate the dropdown.
+ * Tries ../versions.json first (version subdir), then ./versions.json (root).
+ */
+function loadVersions(currentVersion) {
+    var paths = ['../versions.json', './versions.json'];
+
+    function tryNext(i) {
+        if (i >= paths.length) {
+            console.log('versions.json not found, using current version only');
+            return;
+        }
+        fetch(paths[i])
+            .then(function (r) {
+                if (!r.ok) throw new Error(r.status);
+                return r.json();
+            })
+            .then(function (versions) {
+                populateVersions(versions, currentVersion);
+            })
+            .catch(function () {
+                tryNext(i + 1);
+            });
+    }
+
+    tryNext(0);
+}
+
+/**
+ * Landing page: load versions.json dynamically and render the version list + redirect.
+ */
+function setupLandingPage() {
+    fetch('versions.json')
+        .then(function (r) {
+            if (!r.ok) throw new Error(r.status);
+            return r.json();
+        })
+        .then(function (versions) {
+            renderLandingVersions(versions);
+        })
+        .catch(function () {
+            document.getElementById('version-list').innerHTML =
+                '<li class="loading">Could not load versions.json</li>';
+            document.getElementById('redirect-banner').innerHTML =
+                '<strong>Could not determine latest version.</strong>';
+        });
+}
+
+function renderLandingVersions(versions) {
+    var list = document.getElementById('version-list');
+    var banner = document.getElementById('redirect-banner');
+    var latest = versions[0];
+
+    // Redirect banner with countdown
+    banner.innerHTML =
+        '<strong>Auto-redirecting to latest version (' + latest + ') in ' +
+        '<span id="countdown">30</span> seconds...</strong><br>' +
+        '<a href="' + latest + '/">Go to ' + latest + ' now \u2192</a>';
+
+    var seconds = 30;
+    var countdownEl = document.getElementById('countdown');
+    var timer = setInterval(function () {
+        seconds--;
+        if (countdownEl) countdownEl.textContent = seconds;
+        if (seconds <= 0) {
+            clearInterval(timer);
+            window.location.href = latest + '/';
+        }
+    }, 1000);
+
+    // Version list
+    list.innerHTML = '';
+    versions.forEach(function (v, i) {
+        var li = document.createElement('li');
+        var a = document.createElement('a');
+        a.href = v + '/';
+        a.textContent = i === 0 ? v + ' (latest)' : v;
+        if (i === 0) a.classList.add('latest');
+        li.appendChild(a);
+        list.appendChild(li);
+    });
 }

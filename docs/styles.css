@@ -3,7 +3,8 @@
 /* Google Fonts */
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
 
-/* Common styles */
+/* ── Common styles ───────────────────────────────────────────────────────── */
+
 body {
     margin: 0;
     padding: 0;
@@ -11,11 +12,12 @@ body {
     line-height: 1.6;
 }
 
-/* Header bar for Redoc pages */
-.header-bar {
+/* ── Header bar (used on version pages) ──────────────────────────────────── */
+
+.reach-header {
     background: #ff092e;
     color: white;
-    padding: 10px 20px;
+    padding: 0 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -23,180 +25,203 @@ body {
     top: 0;
     left: 0;
     right: 0;
-    z-index: 1000;
-    height: 50px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    z-index: 10000;
+    height: 48px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
-.header-left {
+.reach-header-left {
     display: flex;
     align-items: center;
-    gap: 15px;
+    gap: 12px;
 }
 
-.header-logo {
-    height: 32px;
+.reach-header-logo {
+    height: 28px;
     width: auto;
 }
 
-.header-title {
-    font-size: 18px;
+.reach-header-title {
+    font-size: 16px;
     font-weight: 500;
 }
 
-.header-controls {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-
-.version-selector {
-    background: rgba(255,255,255,0.2);
-    border: 1px solid rgba(255,255,255,0.3);
+.reach-version-select {
+    appearance: none;
+    -webkit-appearance: none;
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
     color: white;
-    padding: 5px 10px;
+    padding: 5px 28px 5px 10px;
     border-radius: 4px;
-    font-size: 14px;
+    font-size: 13px;
+    font-weight: 500;
     cursor: pointer;
+    outline: none;
+    transition: background 0.15s;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='white' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
 }
 
-.version-selector option {
-    background: #ff092e;
+.reach-version-select:hover {
+    background-color: rgba(255, 255, 255, 0.25);
+}
+
+.reach-version-select option {
+    background: #333;
     color: white;
 }
 
-.documentation-notice {
-    background: rgba(255,255,255,0.1);
-    border: 1px solid rgba(255,255,255,0.2);
-    padding: 5px 10px;
-    border-radius: 4px;
-    font-size: 12px;
-    color: rgba(255,255,255,0.9);
+/* Offset page content for fixed header */
+body.has-header {
+    padding-top: 48px;
 }
 
-/* Redoc container - offset for fixed header */
-#redoc-container {
-    margin-top: 70px;
+/* Scalar layout offset — push sidebar and main content below our fixed header */
+body.has-header .scalar-app {
+    --scalar-header-height: 48px;
 }
 
-/* Custom Redoc styling */
-.redoc-wrap {
-    --color-primary: #ff092e;
-    --color-primary-light: #ff4757;
-    --color-primary-dark: #cb2c30;
+body.has-header .scalar-api-reference .sidebar {
+    top: 48px !important;
+    height: calc(100vh - 48px) !important;
 }
 
-/* Landing page styles */
+body.has-header .scalar-api-reference .section-container {
+    --scalar-header-height: 48px;
+}
+
+/* ── Landing page styles ─────────────────────────────────────────────────── */
+
 .landing-page {
     background: #fafafa;
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 40px 20px;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 60px 20px;
 }
 
 .landing-container {
     background: white;
-    padding: 40px;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    max-width: 640px;
+    width: 100%;
+    padding: 48px;
+    border-radius: 10px;
+    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08);
+    height: fit-content;
 }
 
 .landing-container h1 {
+    font-size: 24px;
+    font-weight: 700;
     color: #ff092e;
     border-bottom: 2px solid #ff092e;
     padding-bottom: 10px;
     margin-top: 0;
+    margin-bottom: 8px;
+}
+
+.landing-container .subtitle {
+    color: #666;
+    font-size: 14px;
+    margin-bottom: 32px;
+}
+
+.landing-container h2 {
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #999;
+    margin-bottom: 12px;
 }
 
 .version-list {
     list-style: none;
     padding: 0;
-}
-
-.version-list li {
-    margin: 15px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
 
 .version-list a {
-    display: inline-block;
-    padding: 12px 24px;
-    background: #f8f9fa;
-    color: #124AFF;
-    text-decoration: none;
+    display: block;
+    padding: 10px 16px;
+    background: #fafafa;
+    border: 1px solid #eee;
     border-radius: 6px;
-    border: 1px solid #e9ecef;
-    transition: all 0.2s;
+    color: #333;
+    text-decoration: none;
+    font-size: 14px;
     font-weight: 500;
+    transition: all 0.15s;
 }
 
 .version-list a:hover {
-    background: #124AFF;
+    background: #ff092e;
     color: white;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    border-color: #ff092e;
 }
 
-.latest {
-    background: #ff092e !important;
-    color: white !important;
+.version-list a.latest {
+    background: #ff092e;
+    color: white;
+    border-color: #ff092e;
 }
 
-.latest:hover {
-    background: #cb2c30 !important;
+.version-list a.latest:hover {
+    background: #e0082a;
 }
 
 .auto-redirect {
-    background: #fff3cd;
-    border: 1px solid #ffeaa7;
-    padding: 20px;
+    background: #fff8e1;
+    border: 1px solid #ffe082;
     border-radius: 6px;
-    margin: 25px 0;
+    padding: 16px 20px;
+    margin-bottom: 32px;
+    font-size: 14px;
 }
 
-.features {
-    background: #e7f3ff;
-    border: 1px solid #b3d7ff;
+.auto-redirect strong {
+    color: #333;
+}
+
+.auto-redirect a {
+    color: #ff092e;
+    font-weight: 600;
+}
+
+.loading {
+    text-align: center;
+    color: #999;
     padding: 20px;
-    border-radius: 6px;
-    margin: 25px 0;
+    font-size: 14px;
 }
 
-.features h3 {
-    color: #0066cc;
-    margin-top: 0;
-}
+/* ── Responsive ──────────────────────────────────────────────────────────── */
 
-.features ul {
-    margin: 0;
-}
-
-/* Responsive design */
 @media (max-width: 768px) {
-    .header-bar {
+    .reach-header {
         flex-direction: column;
         height: auto;
-        padding: 10px;
-        gap: 10px;
+        padding: 8px 12px;
+        gap: 6px;
     }
-    
-    .header-left {
+
+    .reach-header-left {
         justify-content: center;
     }
-    
-    .header-controls {
-        justify-content: center;
-        width: 100%;
+
+    body.has-header {
+        padding-top: 80px;
     }
-    
-    #redoc-container {
-        margin-top: 120px;
-    }
-    
+
     .landing-page {
-        padding: 20px 10px;
+        padding: 20px 12px;
     }
-    
+
     .landing-container {
-        padding: 20px;
+        padding: 28px 24px;
     }
 }

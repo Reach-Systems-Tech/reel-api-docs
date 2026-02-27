@@ -1,77 +1,42 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ReelAPI v1 Documentation</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="icon" type="image/x-icon" href="./favicon.ico">
 </head>
+<body class="has-header landing-page">
+    <div class="reach-header">
+        <div class="reach-header-left">
+            <img
+                src="icon.png"
+                alt="Reach Systems"
+                class="reach-header-logo"
+                onerror="this.style.display='none'"
+            >
+            <div class="reach-header-title">ReelAPI v1 Documentation</div>
+        </div>
+    </div>
 
-<body class="landing-page">
     <div class="landing-container">
         <h1>ReelAPI v1 Documentation</h1>
+        <p class="subtitle">Cable Reel Control System API Reference</p>
 
-        <div class="auto-redirect">
-            <p><strong>Auto-redirecting to latest version (1.3.14) in 30 seconds...</strong></p>
-            <p><a href="draft1/">Click here to go immediately</a></p>
-        </div>
-
-        <div class="features">
-            <h3>Enhanced with Redoc</h3>
-            <ul>
-                <li><strong>Built-in sidebar navigation</strong> - Easy browsing of endpoints</li>
-                <li><strong>Search functionality</strong> - Find endpoints and schemas quickly</li>
-                <li><strong>Three-panel layout</strong> - Description, examples, and schemas</li>
-                <li><strong>Responsive design</strong> - Works great on all devices</li>
-                <li><strong>Static documentation</strong> - Perfect for hardware systems</li>
-            </ul>
+        <div class="auto-redirect" id="redirect-banner">
+            Loading latest version...
         </div>
 
         <h2>Available Versions</h2>
-        <ul class="version-list">
-            <li><a href="1.3.14/" class="latest">1.3.14 (latest)</a></li>
-            <li><a href="1.3.13/" >1.3.13</a></li>
-            <li><a href="1.3.12/" >1.3.12</a></li>
-            <li><a href="1.3.11/" >1.3.11</a></li>
-            <li><a href="1.3.10/" >1.3.10</a></li>
-            <li><a href="1.3.9/" >1.3.9</a></li>
-            <li><a href="1.3.8/" >1.3.8</a></li>
-            <li><a href="1.3.5/" >1.3.5</a></li>
-            <li><a href="1.3.4/" >1.3.4</a></li>
-            <li><a href="1.3.3/" >1.3.3</a></li>
-            <li><a href="1.3.2/" >1.3.2</a></li>
-            <li><a href="1.3.1/" >1.3.1</a></li>
-            <li><a href="1.3.0/" >1.3.0</a></li>
-            <li><a href="1.2.12/" >1.2.12</a></li>
-            <li><a href="1.2.11/" >1.2.11</a></li>
-            <li><a href="1.2.10/" >1.2.10</a></li>
-            <li><a href="1.2.9/" >1.2.9</a></li>
-            <li><a href="1.2.8/" >1.2.8</a></li>
-            <li><a href="1.2.7/" >1.2.7</a></li>
-            <li><a href="1.2.6/" >1.2.6</a></li>
-            <li><a href="1.2.5/" >1.2.5</a></li>
-            <li><a href="1.2.4/" >1.2.4</a></li>
-            <li><a href="1.2.3/" >1.2.3</a></li>
-            <li><a href="1.2.2/" >1.2.2</a></li>
-            <li><a href="1.2.1/" >1.2.1</a></li>
-            <li><a href="1.2.0/" >1.2.0</a></li>
-            <li><a href="1.1.22/" >1.1.22</a></li>
-            <li><a href="1.1.21/" >1.1.21</a></li>
-            <li><a href="1.1.20/" >1.1.20</a></li>
-            <li><a href="1.1.19/" >1.1.19</a></li>
-            <li><a href="1.1.18/" >1.1.18</a></li>
-            <li><a href="1.1.17/" >1.1.17</a></li>
-            <li><a href="1.1.16/" >1.1.16</a></li>
-            <li><a href="1.1.15/" >1.1.15</a></li>
-            <li><a href="1.1.14/" >1.1.14</a></li>
+        <ul class="version-list" id="version-list">
+            <li class="loading">Loading versions...</li>
         </ul>
     </div>
 
     <script src="scripts.js"></script>
     <script>
-        setupAutoRedirect('1.3.14');
+        setupLandingPage();
     </script>
 </body>
-
 </html>
