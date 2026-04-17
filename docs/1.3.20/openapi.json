@@ -7111,6 +7111,10 @@
           "motor_driver": {
             "$ref": "#/components/schemas/MotorDriverDiagnosticResponse",
             "description": "Latest known diagnostic snapshot for the motor driver."
+          },
+          "gpio": {
+            "$ref": "#/components/schemas/GPIODiagnosticResponse",
+            "description": "Latest known diagnostic snapshot for host GPIO pins."
           }
         },
         "type": "object",
@@ -7151,6 +7155,17 @@
               }
             ],
             "description": "Partial update for motor driver diagnostics configuration.\n\nIf omitted, the current motor driver diagnostics configuration remains unchanged.\n    "
+          },
+          "gpio": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DiagnosticComponentConfig"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Partial update for GPIO diagnostics configuration.\n\nIf omitted, the current GPIO diagnostics configuration remains unchanged.\n    "
           }
         },
         "type": "object",
@@ -7170,6 +7185,10 @@
           "motor_driver": {
             "$ref": "#/components/schemas/DiagnosticComponentConfig",
             "description": "Current diagnostics configuration for the motor driver component."
+          },
+          "gpio": {
+            "$ref": "#/components/schemas/DiagnosticComponentConfig",
+            "description": "Current diagnostics configuration for the GPIO component."
           }
         },
         "type": "object",
@@ -7222,6 +7241,15 @@
             "summary": "Current Diagnostics Configuration",
             "value": {
               "components": {
+                "gpio": {
+                  "enabled": false
+                },
+                "monitor_thread": {
+                  "enabled": false
+                },
+                "motor_driver": {
+                  "enabled": true
+                },
                 "pendant_control": {
                   "enabled": true
                 }
@@ -7249,6 +7277,15 @@
             "summary": "Active Diagnostics Snapshot",
             "value": {
               "components": {
+                "gpio": {
+                  "enabled": false
+                },
+                "monitor_thread": {
+                  "enabled": false
+                },
+                "motor_driver": {
+                  "enabled": false
+                },
                 "pendant_control": {
                   "data": {
                     "raw_value": 148,
@@ -7267,6 +7304,15 @@
             "summary": "Disabled Diagnostics Snapshot",
             "value": {
               "components": {
+                "gpio": {
+                  "enabled": false
+                },
+                "monitor_thread": {
+                  "enabled": false
+                },
+                "motor_driver": {
+                  "enabled": false
+                },
                 "pendant_control": {
                   "enabled": false
                 }
@@ -8047,6 +8093,244 @@
         ],
         "title": "FinishCalibrationResult",
         "description": "Result data for calibration completion including new calibration factor."
+      },
+      "GPIOBank": {
+        "type": "string",
+        "enum": [
+          "rp1",
+          "soc",
+          "aon"
+        ],
+        "title": "GPIOBank",
+        "description": "GPIO bank on the Raspberry Pi 5.\n\n- rp1: The RP1 southbridge GPIOs (0-53). These are the pins exposed on the\n  40-pin header plus some board-level signals (fan, USB, status LEDs).\n- soc: The BCM2712 SoC's own GPIOs (100-135). Mostly internal: boot SPI,\n  WiFi/Bluetooth SDIO, PCIe to RP1. Rarely useful for user-level debugging.\n- aon: \"Always-on\" GPIOs (200-216, 232-237). Power management, HDMI DDC,\n  SD card detect, PMIC interrupt. Stay alive during low-power states."
+      },
+      "GPIODiagnosticData": {
+        "properties": {
+          "bank": {
+            "$ref": "#/components/schemas/GPIOBank",
+            "description": "Which GPIO bank these pins belong to.\n\nCurrently always `rp1` \u2014 the 40-pin header and board-level IO. Other banks\n(SoC internal, AON domain) may be exposed in the future if debugging needs\nwarrant it.\n        ",
+            "default": "rp1",
+            "example": "rp1"
+          },
+          "pins": {
+            "items": {
+              "$ref": "#/components/schemas/GPIOPinState"
+            },
+            "type": "array",
+            "title": "Pins",
+            "description": "All pins in the bank, ordered by ascending pin number.\n\nWill be empty if `error` is set.\n        "
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error",
+            "description": "Short error message if the `pinctrl` invocation failed.\n\nCommon causes:\n- `pinctrl` binary not available in the container (bind-mount missing)\n- Required shared library (`libgpiolib.so.0`) not present\n- Subprocess timeout or non-zero exit\n\nWhen set, `pins` will be empty. Consumers should display the error to the\noperator rather than treat the empty pin list as \"no pins configured\".\n        ",
+            "example": "pinctrl invocation failed: Command '['/usr/bin/pinctrl']' returned non-zero exit status 127."
+          }
+        },
+        "type": "object",
+        "required": [
+          "pins"
+        ],
+        "title": "GPIODiagnosticData",
+        "description": "GPIO diagnostic payload.\n\nContains the latest GPIO pin snapshot for the configured bank, or an\nerror message if the underlying `pinctrl` invocation failed."
+      },
+      "GPIODiagnosticResponse": {
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled",
+            "description": "Whether GPIO diagnostics are currently enabled.\n\n- **true**: GPIO pin state is pulled from the host on every diagnostics request\n- **false**: GPIO state is not refreshed; the last known snapshot (if any) is returned\n\nBecause GPIO state is pulled synchronously (shelling out to `pinctrl`),\nleaving this enabled adds a small per-request cost to the diagnostics\nendpoint. Enable only when actively debugging hardware IO.\n        ",
+            "default": false,
+            "example": true
+          },
+          "last_updated": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "format": "date-time",
+            "title": "Last Updated",
+            "description": "Timestamp of the most recent GPIO snapshot.\n\nWill be null if no GPIO snapshot has yet been taken (diagnostics never\nenabled, or enabled but no request has been served since).\n        ",
+            "example": "2026-04-17T20:30:29.381000Z"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GPIODiagnosticData"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Most recent GPIO diagnostic payload.\n\nWill be null if diagnostics are disabled or no snapshot has yet been\ncaptured.\n        "
+          }
+        },
+        "type": "object",
+        "title": "GPIODiagnosticResponse",
+        "description": "Current diagnostic state for host GPIO pins.\n\nRepresents the latest GPIO pin snapshot read from the host OS via\n`pinctrl`. Unlike event-driven diagnostics (pendant, monitor thread,\nmotor driver), GPIO state is pulled synchronously on each call to the\ndiagnostics endpoint when enabled."
+      },
+      "GPIOFunction": {
+        "type": "string",
+        "enum": [
+          "input",
+          "output",
+          "none",
+          "alt0",
+          "alt1",
+          "alt2",
+          "alt3",
+          "alt4",
+          "alt5",
+          "alt6",
+          "alt7",
+          "alt8"
+        ],
+        "title": "GPIOFunction",
+        "description": "Configured function of a GPIO pin."
+      },
+      "GPIOLevel": {
+        "type": "string",
+        "enum": [
+          "high",
+          "low"
+        ],
+        "title": "GPIOLevel",
+        "description": "Electrical signal level."
+      },
+      "GPIOPinState": {
+        "properties": {
+          "pin": {
+            "type": "integer",
+            "title": "Pin",
+            "description": "Pin number as reported by pinctrl.\n\nNote that pin numbers overlap across banks (e.g. pin 0 exists in both the RP1\nbank and the SoC bank); use the `bank` field to disambiguate.\n\n**Typical ranges**:\n- **0-53**: RP1 southbridge pins (40-pin header and on-board peripherals)\n- **100-135**: BCM2712 SoC internal pins (boot SPI, WiFi/Bluetooth, PCIe)\n- **200-216, 232-237**: Always-on (AON) pins (PMIC, HDMI DDC, status LED)\n        ",
+            "example": 25
+          },
+          "bank": {
+            "$ref": "#/components/schemas/GPIOBank",
+            "description": "Which GPIO bank this pin belongs to.\n\n- **rp1**: RP1 southbridge, 40-pin header and board-level IO\n- **soc**: BCM2712 SoC internal pins (rarely user-relevant)\n- **aon**: Always-on domain (power management, HDMI DDC, status LED)\n        ",
+            "example": "rp1"
+          },
+          "function": {
+            "$ref": "#/components/schemas/GPIOFunction",
+            "description": "Configured function of the pin.\n\n- **input**: Standard GPIO input\n- **output**: Standard GPIO output\n- **none**: Pin is unclaimed / unconfigured\n- **alt0 - alt8**: Peripheral function (SPI, I2C, UART, PWM, etc). The\n  specific peripheral is given in `function_description`.\n        ",
+            "example": "input"
+          },
+          "pull": {
+            "$ref": "#/components/schemas/GPIOPull",
+            "description": "Pull resistor configuration.\n\n- **up**: Internal pull-up resistor enabled (pin floats high when unconnected)\n- **down**: Internal pull-down resistor enabled (pin floats low when unconnected)\n- **none**: No internal pull resistor (pin floats based on external circuit)\n        ",
+            "example": "up"
+          },
+          "drive": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GPIOLevel"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "For output pins, the level the pin is actively being driven to.\n\n- **high**: Pin is driving its line high\n- **low**: Pin is driving its line low\n- **null**: Pin is not an output, or drive state is not applicable\n\nFor input and alt-function pins, this is always null.\n        "
+          },
+          "level": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GPIOLevel"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Measured electrical level on the line.\n\n- **high**: Line is currently at logic high\n- **low**: Line is currently at logic low\n- **null**: Level is not readable for this pin (some alt-function configurations)\n\nFor input pins, comparing this against `pull` can reveal whether an external\ndevice is actively driving the line \u2014 e.g. an input pin with `pull: up` and\n`level: low` indicates something is pulling the line down.\n        ",
+            "example": "high"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Pin name from pinctrl's comment field.\n\nIncludes board-level aliases where applicable. For example, GPIO 28 is also\nreported as `PCIE_RP1_WAKE/GPIO28` because it has a dual role.\n        ",
+            "example": "GPIO25"
+          },
+          "function_description": {
+            "type": "string",
+            "title": "Function Description",
+            "description": "Human-readable description of the pin's active function.\n\nFor standard GPIO pins this mirrors the `function` field (`\"input\"`,\n`\"output\"`, `\"none\"`). For alt-function pins, this names the active\nperipheral (e.g. `\"SDA1\"`, `\"TXD0\"`, `\"VC_SPI0_MOSI\"`).\n        ",
+            "example": "input"
+          }
+        },
+        "type": "object",
+        "required": [
+          "pin",
+          "bank",
+          "function",
+          "pull",
+          "name",
+          "function_description"
+        ],
+        "title": "GPIOPinState",
+        "description": "State of a single GPIO pin as reported by pinctrl.\n\nRepresents a point-in-time snapshot of a pin's configured function,\npull resistor, drive state, and measured electrical level. Used as the\nelement type in GPIO diagnostic payloads.",
+        "examples": [
+          {
+            "description": "A GPIO output actively driving its line high with no pull resistor",
+            "summary": "Output pin driven high",
+            "value": {
+              "bank": "rp1",
+              "drive": "high",
+              "function": "output",
+              "function_description": "output",
+              "level": "high",
+              "name": "GPIO24",
+              "pin": 24,
+              "pull": "none"
+            }
+          },
+          {
+            "description": "A GPIO input with internal pull-up resistor, reading high (idle)",
+            "summary": "Input pin with pull-up",
+            "value": {
+              "bank": "rp1",
+              "function": "input",
+              "function_description": "input",
+              "level": "high",
+              "name": "GPIO25",
+              "pin": 25,
+              "pull": "up"
+            }
+          },
+          {
+            "description": "A pin in alternate function mode routing I2C SDA",
+            "summary": "Alt-function pin (I2C)",
+            "value": {
+              "bank": "rp1",
+              "function": "alt3",
+              "function_description": "SDA1",
+              "level": "high",
+              "name": "GPIO2",
+              "pin": 2,
+              "pull": "up"
+            }
+          }
+        ]
+      },
+      "GPIOPull": {
+        "type": "string",
+        "enum": [
+          "up",
+          "down",
+          "none"
+        ],
+        "title": "GPIOPull",
+        "description": "Pull resistor configuration."
       },
       "GetCablePositionResponse": {
         "properties": {
