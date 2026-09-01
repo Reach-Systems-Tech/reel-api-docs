@@ -84,6 +84,109 @@ def render_version_page_html(version: str, cfg: DocConfig) -> str:
 </body>
 </html>"""
 
+def render_offline_version_page_html(
+    version: str,
+    openapi_spec: dict,
+    cfg: DocConfig,
+) -> str:
+    title = cfg.title
+    spec_json = json.dumps(openapi_spec)
+
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{title} - {version}</title>
+    <link rel="icon" type="image/x-icon" href="./favicon.ico">
+
+    <style>
+        body {{
+            margin: 0;
+            padding: 0;
+            font-family: Arial, Helvetica, sans-serif;
+        }}
+
+        .reach-header {{
+            background: #ff092e;
+            color: white;
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 10000;
+            height: 48px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }}
+
+        .reach-header-left {{
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }}
+
+        .reach-header-logo {{
+            height: 28px;
+            width: auto;
+        }}
+
+        .reach-header-title {{
+            font-size: 16px;
+            font-weight: 500;
+        }}
+
+        body.has-header {{
+            padding-top: 48px;
+        }}
+
+        body.has-header .scalar-app {{
+            --scalar-header-height: 48px;
+        }}
+
+        body.has-header .scalar-api-reference .sidebar {{
+            top: 48px !important;
+            height: calc(100vh - 48px) !important;
+        }}
+
+        body.has-header .scalar-api-reference .section-container {{
+            --scalar-header-height: 48px;
+        }}
+    </style>
+</head>
+<body class="has-header">
+    <div class="reach-header">
+        <div class="reach-header-left">
+            <img
+                src="./icon.png"
+                alt="Reach Systems"
+                class="reach-header-logo"
+                onerror="this.style.display='none'"
+            >
+            <div class="reach-header-title">
+                {title} Documentation - {version}
+            </div>
+        </div>
+    </div>
+
+    <div id="app"></div>
+
+    <script src="./scalar/api-reference.js"></script>
+    <script>
+        const spec = {spec_json};
+
+        Scalar.createApiReference('#app', {{
+            content: spec,
+            agent: {{
+                disabled: true
+            }}
+        }});
+    </script>
+</body>
+</html>"""
+
 
 def render_landing_page_html(cfg: DocConfig) -> str:
     title = cfg.title
