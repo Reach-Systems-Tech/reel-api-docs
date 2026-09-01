@@ -73,6 +73,28 @@ body {
     color: white;
 }
 
+.reach-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.reach-offline-download {
+    color: white;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 5px 10px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.15);
+    transition: background 0.15s;
+}
+
+.reach-offline-download:hover {
+    background: rgba(255, 255, 255, 0.25);
+}
+
 /* Offset page content for fixed header */
 body.has-header {
     padding-top: 48px;
@@ -211,6 +233,11 @@ body.has-header .scalar-api-reference .section-container {
 
     .reach-header-left {
         justify-content: center;
+    }
+
+    .reach-header-actions {
+        justify-content: center;
+        flex-wrap: wrap;
     }
 
     body.has-header {
