@@ -44,14 +44,24 @@ def render_version_page_html(version: str, cfg: DocConfig) -> str:
             >
             <div class="reach-header-title">{title} Documentation</div>
         </div>
-        <select
-            class="reach-version-select"
-            id="version-select"
-            aria-label="Select API version"
-            onchange="switchVersion(this.value, '{version}')"
-        >
-            <option selected>{version}</option>
-        </select>
+        <div class="reach-header-actions">
+            <a
+                class="reach-offline-download"
+                href="../downloads/reelapi-docs-{version}-offline.zip"
+                download
+            >
+                Download Offline Docs
+            </a>
+
+            <select
+                class="reach-version-select"
+                id="version-select"
+                aria-label="Select API version"
+                onchange="switchVersion(this.value, '{version}')"
+            >
+                <option selected>{version}</option>
+            </select>
+        </div>
     </div>
 
     <div id="app"></div>

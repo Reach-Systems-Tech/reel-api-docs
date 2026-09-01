@@ -18,14 +18,24 @@
             >
             <div class="reach-header-title">ReelAPI v1 Documentation</div>
         </div>
-        <select
-            class="reach-version-select"
-            id="version-select"
-            aria-label="Select API version"
-            onchange="switchVersion(this.value, '1.2.10')"
-        >
-            <option selected>1.2.10</option>
-        </select>
+        <div class="reach-header-actions">
+            <a
+                class="reach-offline-download"
+                href="../downloads/reelapi-docs-1.2.10-offline.zip"
+                download
+            >
+                Download Offline Docs
+            </a>
+
+            <select
+                class="reach-version-select"
+                id="version-select"
+                aria-label="Select API version"
+                onchange="switchVersion(this.value, '1.2.10')"
+            >
+                <option selected>1.2.10</option>
+            </select>
+        </div>
     </div>
 
     <div id="app"></div>

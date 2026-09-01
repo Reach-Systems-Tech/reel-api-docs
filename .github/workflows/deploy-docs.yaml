@@ -61,6 +61,13 @@ jobs:
             --version "${{ steps.vars.outputs.version }}" \
             --title "ReelAPI v1"
 
+      - name: Generate offline documentation
+        run: |
+          python3 -m tools.offline_docs \
+            --docs-dir docs \
+            --version "${{ steps.vars.outputs.version }}" \
+            --title "ReelAPI v1"
+
       - name: Update versions.json
         run: |
           python3 .github/scripts/version_manager.py \
