@@ -50,7 +50,6 @@ This repository is part of the **automated documentation deployment pipeline** a
 
 ### Workflow
 
-- **Source Repository** - [`Reach-Systems-Tech/p017_reach_web_portal_v2`](https://github.com/Reach-Systems-Tech/p017_reach_web_portal_v2) (private)
 - **Documentation Generation** - Triggered by version tags in the private repo
 - **Offline Package Generation** - Builds a version-specific ZIP from the published `openapi.json`
 
